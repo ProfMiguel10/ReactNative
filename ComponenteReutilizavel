@@ -7,3 +7,12 @@ function CartaoEstudante() {
     </View>
   );
 }
+export default function App() {
+  return (
+    <View>
+      <CartaoEstudante />
+      <CartaoEstudante />
+    </View>
+  );
+}
+
