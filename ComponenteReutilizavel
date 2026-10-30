@@ -1,0 +1,9 @@
+import { Text, View } from 'react-native';
+function CartaoEstudante() {
+  return (
+    <View>
+      <Text>Nome: Ana</Text>
+      <Text>Curso: Ciência da Computação</Text>
+    </View>
+  );
+}
