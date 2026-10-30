@@ -1,0 +1,183 @@
+import { useState } from 'react';
+
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+
+export default function Index() {
+  const [descricao, setDescricao] = useState('');
+  const [tarefas, setTarefas] = useState([]);
+
+  function adicionarTarefa() {
+    const texto = descricao.trim();
+
+    if (texto.length === 0) {
+      return;
+    }
+
+    const novaTarefa = {
+      id: `${Date.now()}-${Math.random()}`,
+      descricao: texto,
+      concluida: false
+    };
+
+    setTarefas(tarefasAtuais => [
+      ...tarefasAtuais,
+      novaTarefa
+    ]);
+
+    setDescricao('');
+  }
+
+  function alternarTarefa(id) {
+    setTarefas(tarefasAtuais =>
+      tarefasAtuais.map(tarefa =>
+        tarefa.id === id
+          ? { ...tarefa, concluida: !tarefa.concluida }
+          : tarefa
+      )
+    );
+  }
+
+  const concluidas = tarefas.filter(
+    tarefa => tarefa.concluida
+  ).length;
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Minhas tarefas acadêmicas
+      </Text>
+
+      <Text style={styles.resumo}>
+        Concluídas: {concluidas} de {tarefas.length}
+      </Text>
+
+      <View style={styles.formulario}>
+
+        <TextInput
+          style={styles.entrada}
+          placeholder="Digite uma atividade"
+          value={descricao}
+          onChangeText={setDescricao}
+          onSubmitEditing={adicionarTarefa}
+          returnKeyType="done"
+        />
+
+        <Pressable
+          style={styles.botao}
+          onPress={adicionarTarefa}
+        >
+          <Text style={styles.textoBotao}>
+            Adicionar
+          </Text>
+        </Pressable>
+
+      </View>
+
+      <FlatList
+        data={tarefas}
+        keyExtractor={item => item.id}
+        ListEmptyComponent={
+          <Text style={styles.vazio}>
+            Nenhuma tarefa cadastrada.
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.tarefa}
+            onPress={() => alternarTarefa(item.id)}
+          >
+            <Text
+              style={[
+                styles.descricaoTarefa,
+                item.concluida && styles.concluida
+              ]}
+            >
+              {item.concluida ? '✓ ' : '○ '}
+              {item.descricao}
+            </Text>
+          </Pressable>
+        )}
+      />
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    paddingTop: 64,
+    backgroundColor: '#f4f6fa'
+  },
+
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#17365d'
+  },
+
+  resumo: {
+    fontSize: 15,
+    marginBottom: 20,
+    color: '#444'
+  },
+
+  formulario: {
+    gap: 10,
+    marginBottom: 20
+  },
+
+  entrada: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#ccd3df',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16
+  },
+
+  botao: {
+    backgroundColor: '#17365d',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontWeight: 'bold'
+  },
+
+  tarefa: {
+    backgroundColor: '#ffffff',
+    padding: 14,
+    marginBottom: 10,
+    borderRadius: 8
+  },
+
+  descricaoTarefa: {
+    fontSize: 16,
+    color: '#222'
+  },
+
+  concluida: {
+    textDecorationLine: 'line-through',
+    color: '#777'
+  },
+
+  vazio: {
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 24
+  }
+});
