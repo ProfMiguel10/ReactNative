@@ -1,0 +1,423 @@
+import React, { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  StyleSheet,
+  Alert
+} from 'react-native';
+
+export default function App() {
+
+  const [novoObjetivo, setNovoObjetivo] = useState('');
+
+  const [objetivos, setObjetivos] = useState([
+    { id: '1', titulo: 'Estudar React Native', concluido: false },
+    { id: '2', titulo: 'Resolver exercícios de programação', concluido: false },
+    { id: '3', titulo: 'Revisar os conteúdos da aula', concluido: true },
+    { id: '4', titulo: 'Desenvolver um pequeno aplicativo', concluido: false }
+  ]);
+
+  // Calcula a quantidade de objetivos concluídos
+  const totalConcluidos = objetivos.filter(
+    item => item.concluido
+  ).length;
+
+  // Calcula a pontuação
+  const pontos = totalConcluidos * 10;
+
+  // Calcula o percentual de progresso
+  const progresso = objetivos.length > 0
+    ? Math.round((totalConcluidos / objetivos.length) * 100)
+    : 0;
+
+  // Define uma mensagem motivacional
+  function obterMensagem() {
+    if (objetivos.length === 0) {
+      return 'Que tal começar um novo objetivo?';
+    }
+
+    if (progresso === 100) {
+      return '🏆 Parabéns! Você alcançou todos os objetivos!';
+    }
+
+    if (progresso >= 50) {
+      return '🚀 Você está no caminho certo! Continue!';
+    }
+
+    return '💡 Cada pequeno passo é uma conquista!';
+  }
+
+  // Adiciona um novo objetivo
+  function adicionarObjetivo() {
+    const titulo = novoObjetivo.trim();
+
+    if (titulo.length === 0) {
+      Alert.alert('Atenção', 'Digite um objetivo primeiro!');
+      return;
+    }
+
+    const novoItem = {
+      id: Date.now().toString(),
+      titulo: titulo,
+      concluido: false
+    };
+
+    setObjetivos(listaAtual => [
+      ...listaAtual,
+      novoItem
+    ]);
+
+    setNovoObjetivo('');
+  }
+
+  // Altera o estado de conclusão de um objetivo
+  function alternarObjetivo(id) {
+    setObjetivos(listaAtual =>
+      listaAtual.map(item =>
+        item.id === id
+          ? { ...item, concluido: !item.concluido }
+          : item
+      )
+    );
+  }
+
+  // Reinicia os objetivos
+  function reiniciarJornada() {
+    Alert.alert(
+      'Reiniciar jornada',
+      'Deseja marcar todos os objetivos como pendentes?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Reiniciar',
+          onPress: () => {
+            setObjetivos(listaAtual =>
+              listaAtual.map(item => ({
+                ...item,
+                concluido: false
+              }))
+            );
+          }
+        }
+      ]
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.logo}>🎯 OBJETIVOS</Text>
+
+      <Text style={styles.titulo}>
+        Minha jornada de conquistas
+      </Text>
+
+      <Text style={styles.subtitulo}>
+        Transforme seus objetivos em conquistas!
+      </Text>
+
+      {/* Painel de pontuação */}
+
+      <View style={styles.painel}>
+
+        <View style={styles.coluna}>
+          <Text style={styles.numero}>{pontos}</Text>
+          <Text style={styles.rotulo}>PONTOS</Text>
+        </View>
+
+        <View style={styles.coluna}>
+          <Text style={styles.numero}>
+            {totalConcluidos}/{objetivos.length}
+          </Text>
+          <Text style={styles.rotulo}>CONCLUÍDOS</Text>
+        </View>
+
+        <View style={styles.coluna}>
+          <Text style={styles.numero}>{progresso}%</Text>
+          <Text style={styles.rotulo}>PROGRESSO</Text>
+        </View>
+
+      </View>
+
+      {/* Barra de progresso */}
+
+      <View style={styles.barraFundo}>
+        <View
+          style={[
+            styles.barraProgresso,
+            { width: `${progresso}%` }
+          ]}
+        />
+      </View>
+
+      <Text style={styles.motivacao}>
+        {obterMensagem()}
+      </Text>
+
+      {/* Cadastro de objetivos */}
+
+      <Text style={styles.secao}>
+        Meus objetivos
+      </Text>
+
+      <TextInput
+        style={styles.entrada}
+        placeholder="Digite um novo objetivo..."
+        placeholderTextColor="#888"
+        value={novoObjetivo}
+        onChangeText={setNovoObjetivo}
+        onSubmitEditing={adicionarObjetivo}
+        returnKeyType="done"
+      />
+
+      <Pressable
+        style={styles.botaoAdicionar}
+        onPress={adicionarObjetivo}
+      >
+        <Text style={styles.textoBotao}>
+          + Adicionar objetivo
+        </Text>
+      </Pressable>
+
+      {/* Lista de objetivos */}
+
+      <FlatList
+        data={objetivos}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.lista}
+        ListEmptyComponent={
+          <Text style={styles.vazio}>
+            Nenhum objetivo cadastrado.
+          </Text>
+        }
+        renderItem={({ item }) => (
+
+          <Pressable
+            style={[
+              styles.card,
+              item.concluido && styles.cardConcluido
+            ]}
+            onPress={() => alternarObjetivo(item.id)}
+          >
+
+            <Text style={styles.icone}>
+              {item.concluido ? '🏆' : '⭐'}
+            </Text>
+
+            <View style={styles.info}>
+              <Text
+                style={[
+                  styles.nomeObjetivo,
+                  item.concluido && styles.riscado
+                ]}
+              >
+                {item.titulo}
+              </Text>
+
+              <Text style={styles.status}>
+                {item.concluido
+                  ? 'Objetivo concluído! +10 pontos'
+                  : 'Toque para concluir'}
+              </Text>
+            </View>
+
+            <Text style={styles.check}>
+              {item.concluido ? '✓' : '○'}
+            </Text>
+
+          </Pressable>
+
+        )}
+      />
+
+      <Pressable
+        style={styles.botaoReiniciar}
+        onPress={reiniciarJornada}
+      >
+        <Text style={styles.textoReiniciar}>
+          Reiniciar jornada
+        </Text>
+      </Pressable>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#10172A',
+    padding: 20,
+    paddingTop: 55
+  },
+
+  logo: {
+    color: '#A78BFA',
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: 3
+  },
+
+  titulo: {
+    color: '#FFFFFF',
+    fontSize: 23,
+    fontWeight: 'bold',
+    marginTop: 12
+  },
+
+  subtitulo: {
+    color: '#AAB2C5',
+    fontSize: 14,
+    marginTop: 6,
+    marginBottom: 22
+  },
+
+  painel: {
+    flexDirection: 'row',
+    backgroundColor: '#202B45',
+    borderRadius: 16,
+    padding: 18,
+    justifyContent: 'space-around'
+  },
+
+  coluna: {
+    alignItems: 'center'
+  },
+
+  numero: {
+    color: '#A78BFA',
+    fontSize: 23,
+    fontWeight: 'bold'
+  },
+
+  rotulo: {
+    color: '#C5CADD',
+    fontSize: 10,
+    marginTop: 5
+  },
+
+  barraFundo: {
+    height: 9,
+    backgroundColor: '#303B55',
+    borderRadius: 10,
+    marginTop: 20,
+    overflow: 'hidden'
+  },
+
+  barraProgresso: {
+    height: 9,
+    backgroundColor: '#A78BFA',
+    borderRadius: 10
+  },
+
+  motivacao: {
+    color: '#FDE68A',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 22
+  },
+
+  secao: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12
+  },
+
+  entrada: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 15
+  },
+
+  botaoAdicionar: {
+    backgroundColor: '#7C3AED',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 18
+  },
+
+  textoBotao: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 15
+  },
+
+  lista: {
+    paddingBottom: 12
+  },
+
+  card: {
+    backgroundColor: '#202B45',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+
+  cardConcluido: {
+    backgroundColor: '#263D3C'
+  },
+
+  icone: {
+    fontSize: 24,
+    marginRight: 12
+  },
+
+  info: {
+    flex: 1
+  },
+
+  nomeObjetivo: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
+
+  riscado: {
+    textDecorationLine: 'line-through',
+    color: '#AAB2C5'
+  },
+
+  status: {
+    color: '#AAB2C5',
+    fontSize: 11,
+    marginTop: 5
+  },
+
+  check: {
+    color: '#A78BFA',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 8
+  },
+
+  vazio: {
+    color: '#AAB2C5',
+    textAlign: 'center',
+    margin: 20
+  },
+
+  botaoReiniciar: {
+    alignItems: 'center',
+    padding: 12
+  },
+
+  textoReiniciar: {
+    color: '#FCA5A5',
+    fontSize: 13
+  }
+
+});
+
+
