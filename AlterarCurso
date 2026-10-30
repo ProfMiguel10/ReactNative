@@ -1,0 +1,29 @@
+
+import { useState } from 'react';
+import { Button, Text, View } from 'react-native';
+
+export default function App() {
+  const [perfil, setPerfil] = useState({
+    nome: 'Ana',
+    curso: 'Ciência da Computação'
+  });
+
+  function alterarCurso() {
+    setPerfil(perfilAtual => ({
+      ...perfilAtual,
+      curso: 'Engenharia de Software'
+    }));
+  }
+
+  return (
+    <View>
+      <Text>{perfil.nome}</Text>
+      <Text>{perfil.curso}</Text>
+
+      <Button
+        title="Alterar curso"
+        onPress={alterarCurso}
+      />
+    </View>
+  );
+}
