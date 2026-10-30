@@ -1,0 +1,17 @@
+import { useState } from 'react';
+import { View, Text, Button } from 'react-native';
+
+export default function App() {
+  const [contador, setContador] = useState(0);
+
+  return (
+    <View style={{ padding: 24 }}>
+      <Text>Quantidade de interações: {contador}</Text>
+
+      <Button
+        title="Adicionar"
+        onPress={() => setContador(contador + 1)}
+      />
+    </View>
+  );
+}
