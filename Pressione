@@ -1,0 +1,20 @@
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+
+export default function App() {
+  const [mensagem, setMensagem] = useState(
+    'Aguardando interação'
+  );
+
+  return (
+    <View>
+      <Text>{mensagem}</Text>
+
+      <Pressable
+        onPress={() => setMensagem('Você pressionou o botão!')}
+      >
+        <Text>Pressione aqui</Text>
+      </Pressable>
+    </View>
+  );
+}
