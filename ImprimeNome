@@ -1,0 +1,72 @@
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+} from 'react-native';
+
+export default function App() {
+  const [nome, setNome] = useState('');
+  const [mensagem, setMensagem] = useState('');
+
+  function cumprimentar() {
+    const nomeFormatado = nome.trim();
+
+    if (nomeFormatado.length === 0) {
+      setMensagem('Digite seu nome para continuar.');
+      return;
+    }
+
+    setMensagem(`Olá, ${nomeFormatado}!`);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>
+        Identificação do estudante
+      </Text>
+
+      <TextInput
+        style={styles.campo}
+        placeholder="Digite seu nome"
+        value={nome}
+        onChangeText={setNome}
+      />
+
+      <Button
+        title="Continuar"
+        onPress={cumprimentar}
+      />
+
+      <Text style={styles.mensagem}>
+        {mensagem}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  campo: {
+    borderWidth: 1,
+    borderColor: '#999',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  mensagem: {
+    marginTop: 20,
+    fontSize: 16,
+  },
+});
