@@ -1,0 +1,49 @@
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+
+export default function Index() {
+  const [mensagem, setMensagem] = useState('Aguardando interação...');
+
+  function exibirMensagem() {
+    setMensagem('Botão pressionado com sucesso!');
+    console.log('Botão pressionado!');
+    Alert.alert('Ação executada', 'Você pressionou o botão!');
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>
+        Eventos no React Native
+      </Text>
+
+      <Text style={styles.mensagem}>
+        {mensagem}
+      </Text>
+
+      <Button
+        title="Executar ação"
+        onPress={exibirMensagem}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f2f2f2',
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  mensagem: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+});
