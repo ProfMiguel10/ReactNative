@@ -1,0 +1,16 @@
+import { useState } from 'react';
+import { Button, Text, View } from 'react-native';
+export default function App() {
+  const [contador, setContador] = useState(0);
+
+  return (
+    <View>
+      <Text>Contador: {contador}</Text>
+
+      <Button
+        title="Adicionar"
+        onPress={() => setContador(valor => valor + 1)}
+      />
+    </View>
+  );
+}
