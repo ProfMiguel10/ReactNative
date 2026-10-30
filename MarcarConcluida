@@ -1,0 +1,24 @@
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+export default function App() {
+  const [concluida, setConcluida] = useState(false);
+  function alternarStatus() {
+    setConcluida(valorAtual => !valorAtual);
+  }
+
+  return (
+    <View>
+      <Text>
+        Status: {concluida ? 'Concluída' : 'Pendente'}
+      </Text>
+
+      <Pressable onPress={alternarStatus}>
+        <Text>
+          {concluida
+            ? 'Marcar como pendente'
+            : 'Marcar como concluída'}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
