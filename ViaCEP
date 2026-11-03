@@ -1,0 +1,250 @@
+import { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  StyleSheet,
+  ScrollView
+} from 'react-native';
+
+export default function App() {
+
+  // Armazena o CEP digitado pelo usuário.
+  const [cep, setCep] = useState('');
+
+  // Armazena os dados retornados pelo ViaCEP.
+  const [endereco, setEndereco] = useState(null);
+
+  // Controla o indicador de carregamento.
+  const [carregando, setCarregando] = useState(false);
+
+  // Armazena mensagens de erro.
+  const [erro, setErro] = useState('');
+
+  // Função responsável por consultar o Web Service.
+  async function consultarCep() {
+
+    // Remove caracteres que não sejam números.
+    const cepLimpo = cep.replace(/\D/g, '');
+
+    // Valida se o CEP possui oito dígitos.
+    if (!/^[0-9]{8}$/.test(cepLimpo)) {
+      setErro('Informe um CEP válido com oito dígitos.');
+      setEndereco(null);
+      return;
+    }
+
+    // Prepara a interface para uma nova consulta.
+    setCarregando(true);
+    setErro('');
+    setEndereco(null);
+
+    try {
+
+      // Monta o endereço da API.
+      const url =
+        `https://viacep.com.br/ws/${cepLimpo}/json/`;
+
+      // Realiza a requisição HTTP.
+      const resposta = await fetch(url);
+
+      // Verifica se a resposta HTTP foi bem-sucedida.
+      if (!resposta.ok) {
+        throw new Error('Não foi possível realizar a consulta.');
+      }
+
+      // Converte a resposta JSON em objeto JavaScript.
+      const dados = await resposta.json();
+
+      // Verifica se o CEP existe na base do ViaCEP.
+      if (dados.erro) {
+        setErro('CEP não encontrado. Verifique os números informados.');
+        return;
+      }
+
+      // Armazena os dados recebidos.
+      setEndereco(dados);
+
+    } catch (erroCapturado) {
+
+      // Trata problemas de conexão ou consulta.
+      setErro(
+        'Não foi possível acessar o serviço. Verifique sua conexão.'
+      );
+
+    } finally {
+
+      // Finaliza o indicador de carregamento.
+      setCarregando(false);
+
+    }
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+
+      <Text style={styles.titulo}>
+        Consulta de CEP
+      </Text>
+
+      <Text style={styles.descricao}>
+        Informe seu CEP para consultar os dados do endereço.
+      </Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Digite o CEP"
+        keyboardType="numeric"
+        maxLength={8}
+        value={cep}
+        onChangeText={texto => {
+          setCep(texto.replace(/\D/g, ''));
+        }}
+      />
+
+      <Pressable
+        style={styles.botao}
+        onPress={consultarCep}
+        disabled={carregando}
+      >
+        <Text style={styles.textoBotao}>
+          Consultar endereço
+        </Text>
+      </Pressable>
+
+      {carregando && (
+        <View style={styles.resultado}>
+          <ActivityIndicator size="large" />
+          <Text style={styles.mensagem}>
+            Consultando endereço...
+          </Text>
+        </View>
+      )}
+
+      {erro !== '' && (
+        <Text style={styles.erro}>
+          {erro}
+        </Text>
+      )}
+
+      {endereco && (
+        <View style={styles.resultado}>
+
+          <Text style={styles.subtitulo}>
+            Endereço encontrado!
+          </Text>
+
+          <Text style={styles.campo}>
+            CEP: {endereco.cep}
+          </Text>
+
+          <Text style={styles.campo}>
+            Logradouro: {endereco.logradouro || 'Não informado'}
+          </Text>
+
+          <Text style={styles.campo}>
+            Complemento: {endereco.complemento || 'Não informado'}
+          </Text>
+
+          <Text style={styles.campo}>
+            Bairro: {endereco.bairro || 'Não informado'}
+          </Text>
+
+          <Text style={styles.campo}>
+            Cidade: {endereco.localidade}
+          </Text>
+
+          <Text style={styles.campo}>
+            Estado: {endereco.estado} ({endereco.uf})
+          </Text>
+
+        </View>
+      )}
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flexGrow: 1,
+    backgroundColor: '#f4f6fa',
+    padding: 24,
+    paddingTop: 60
+  },
+
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#17365d',
+    textAlign: 'center',
+    marginBottom: 12
+  },
+
+  descricao: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#cbd2df',
+    borderRadius: 8,
+    padding: 14,
+    fontSize: 18,
+    marginBottom: 16
+  },
+
+  botao: {
+    backgroundColor: '#17365d',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  resultado: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    marginTop: 24
+  },
+
+  subtitulo: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 16
+  },
+
+  campo: {
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 10
+  },
+
+  mensagem: {
+    textAlign: 'center',
+    marginTop: 12
+  },
+
+  erro: {
+    color: '#c62828',
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 15
+  }
+
+});
