@@ -1,0 +1,25 @@
+import { Text, View } from 'react-native';
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#f2f5f9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: '#17365d'
+        }}
+      >
+        Minha primeira interface estilizada
+      </Text>
+    </View>
+  );
+}
