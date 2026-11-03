@@ -1,0 +1,163 @@
+
+import { useState } from 'react';
+
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+
+// 1. Definição das propriedades do componente
+type CampoTextoProps = {
+  rotulo: string;
+  valor: string;
+  placeholder: string;
+  aoAlterar: (texto: string) => void;
+};
+
+// 2. Criação do componente reutilizável
+function CampoTexto({
+  rotulo,
+  valor,
+  placeholder,
+  aoAlterar
+}: CampoTextoProps) {
+
+  return (
+    <View style={styles.grupo}>
+
+      <Text style={styles.rotulo}>
+        {rotulo}
+      </Text>
+
+      <TextInput
+        style={styles.entrada}
+        value={valor}
+        onChangeText={aoAlterar}
+        placeholder={placeholder}
+      />
+
+    </View>
+  );
+}
+
+// 3. Componente principal da aplicação
+export default function App() {
+
+  // Estados dos campos do formulário
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Cadastro de estudante
+      </Text>
+
+      <Text style={styles.descricao}>
+        Preencha os campos abaixo:
+      </Text>
+
+      {/* Campo para informar o nome */}
+      <CampoTexto
+        rotulo="Nome completo"
+        valor={nome}
+        placeholder="Digite seu nome"
+        aoAlterar={setNome}
+      />
+
+      {/* Campo para informar o e-mail */}
+      <CampoTexto
+        rotulo="E-mail"
+        valor={email}
+        placeholder="Digite seu e-mail"
+        aoAlterar={setEmail}
+      />
+
+      {/* Exibição dos dados digitados */}
+      <View style={styles.resultado}>
+
+        <Text style={styles.subtitulo}>
+          Dados informados
+        </Text>
+
+        <Text style={styles.texto}>
+          Nome: {nome || 'Não informado'}
+        </Text>
+
+        <Text style={styles.texto}>
+          E-mail: {email || 'Não informado'}
+        </Text>
+
+      </View>
+
+    </View>
+  );
+}
+
+// 4. Estilização da interface
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f2f5f9',
+    padding: 24,
+    justifyContent: 'center'
+  },
+
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#243b53',
+    marginBottom: 8
+  },
+
+  descricao: {
+    fontSize: 15,
+    color: '#62748a',
+    marginBottom: 24
+  },
+
+  grupo: {
+    marginBottom: 16
+  },
+
+  rotulo: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#243b53'
+  },
+
+  entrada: {
+    borderWidth: 1,
+    borderColor: '#cbd2df',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#ffffff',
+    fontSize: 16
+  },
+
+  resultado: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 8
+  },
+
+  subtitulo: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#243b53'
+  },
+
+  texto: {
+    fontSize: 15,
+    marginBottom: 8,
+    color: '#45556b'
+  }
+
+});
