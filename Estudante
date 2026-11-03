@@ -1,0 +1,18 @@
+import { useEffect, useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
+export default function App() {
+  const [nome, setNome] = useState('');
+  useEffect(() => {
+    console.log('O nome atual é:', nome);
+  }, [nome]);
+  return (
+    <View>
+      <TextInput
+        placeholder="Digite seu nome"
+        value={nome}
+        onChangeText={setNome}
+      />
+      <Text>Olá, {nome || 'estudante'}!</Text>
+    </View>
+  );
+}
