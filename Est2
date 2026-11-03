@@ -1,0 +1,42 @@
+import {
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>
+        Painel acadêmico
+      </Text>
+
+      <Text style={styles.descricao}>
+        Organize seus estudos com mais facilidade.
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f2f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24
+  },
+
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 12
+  },
+
+  descricao: {
+    fontSize: 16,
+    color: '#444444',
+    textAlign: 'center'
+  }
+});
