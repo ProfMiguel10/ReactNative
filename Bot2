@@ -1,0 +1,107 @@
+
+import { useState } from 'react';
+
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+
+export default function App() {
+
+  // Armazena a mensagem apresentada ao usuário
+  const [mensagem, setMensagem] = useState('');
+
+  // Função executada quando o botão é pressionado
+  function executarAcao() {
+    setMensagem('Cadastro solicitado com sucesso!');
+  }
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Cadastro de atividades
+      </Text>
+
+      <Text style={styles.descricao}>
+        Clique no botão abaixo para realizar uma ação.
+      </Text>
+
+      <Pressable
+        onPress={executarAcao}
+        accessibilityRole="button"
+        accessibilityLabel="Cadastrar atividade"
+        style={({ pressed }) => [
+          styles.botao,
+          pressed && styles.botaoPressionado
+        ]}
+      >
+        <Text style={styles.textoBotao}>
+          Cadastrar atividade
+        </Text>
+      </Pressable>
+
+      {mensagem !== '' && (
+        <Text style={styles.mensagem}>
+          {mensagem}
+        </Text>
+      )}
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f2f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24
+  },
+
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 12
+  },
+
+  descricao: {
+    fontSize: 15,
+    color: '#45556b',
+    textAlign: 'center',
+    marginBottom: 24
+  },
+
+  botao: {
+    backgroundColor: '#17365d',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%'
+  },
+
+  botaoPressionado: {
+    opacity: 0.75,
+    transform: [{ scale: 0.98 }]
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  mensagem: {
+    marginTop: 20,
+    color: '#16803c',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center'
+  }
+
+});
