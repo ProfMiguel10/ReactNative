@@ -1,0 +1,30 @@
+import { useState } from 'react';
+import {
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+
+export default function App() {
+  const [nome, setNome] = useState('');
+
+  return (
+    <View style={{ padding: 20 }}>
+      <Text>Nome do estudante</Text>
+
+      <TextInput
+        value={nome}
+        onChangeText={setNome}
+        placeholder="Digite seu nome"
+        style={{
+          borderWidth: 1,
+          borderColor: '#cccccc',
+          borderRadius: 8,
+          padding: 12
+        }}
+      />
+
+      <Text>Nome informado: {nome}</Text>
+    </View>
+  );
+}
