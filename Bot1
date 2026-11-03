@@ -1,0 +1,35 @@
+import {
+  Pressable,
+  StyleSheet,
+  Text
+} from 'react-native';
+
+export default function BotaoExemplo() {
+  return (
+    <Pressable
+      style={styles.botao}
+      onPress={() => console.log('Cadastro solicitado')}
+      accessibilityRole="button"
+      accessibilityLabel="Cadastrar atividade"
+    >
+      <Text style={styles.textoBotao}>
+        Cadastrar atividade
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  botao: {
+    backgroundColor: '#17365d',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16
+  }
+});
