@@ -1,0 +1,74 @@
+import {
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.cabecalho}>
+        <Text style={styles.titulo}>
+          Minhas atividades
+        </Text>
+
+        <Text style={styles.subtitulo}>
+          Organize sua rotina acadêmica
+        </Text>
+      </View>
+
+      <View style={styles.cartao}>
+        <Text style={styles.cartaoTitulo}>
+          Próxima atividade
+        </Text>
+
+        <Text style={styles.cartaoDescricao}>
+          Revisar os conteúdos de programação.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f4f6fa',
+    padding: 20,
+    paddingTop: 60
+  },
+
+  cabecalho: {
+    marginBottom: 24
+  },
+
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#17365d'
+  },
+
+  subtitulo: {
+    fontSize: 16,
+    color: '#555555',
+    marginTop: 8
+  },
+
+  cartao: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20
+  },
+
+  cartaoTitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8
+  },
+
+  cartaoDescricao: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#444444'
+  }
+});
