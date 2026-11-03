@@ -1,0 +1,38 @@
+import {
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.bloco}>
+        <Text>Início</Text>
+      </View>
+
+      <View style={styles.bloco}>
+        <Text>Atividades</Text>
+      </View>
+
+      <View style={styles.bloco}>
+        <Text>Perfil</Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    padding: 16,
+    gap: 12
+  },
+
+  bloco: {
+    backgroundColor: '#dce7f5',
+    padding: 20,
+    borderRadius: 8
+  }
+});
