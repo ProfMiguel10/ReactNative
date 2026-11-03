@@ -1,0 +1,298 @@
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  StyleSheet
+} from 'react-native';
+
+// ==================================================
+// 1. CONTEXT API
+// Cria um contexto para compartilhar os dados do perfil.
+// ==================================================
+
+const PerfilContext = createContext(null);
+
+// ==================================================
+// 2. PROVIDER
+// Centraliza os estados e disponibiliza os dados
+// para todos os componentes que consumirem o contexto.
+// ==================================================
+
+function PerfilProvider({ children }) {
+
+  // useState: armazena os dados compartilhados do perfil.
+  const [perfil, setPerfil] = useState({
+    nome: '',
+    curso: 'Ciência da Computação'
+  });
+
+  // useState: controla o carregamento inicial.
+  const [carregando, setCarregando] = useState(true);
+
+  // useEffect: simula o carregamento inicial dos dados.
+  // O array vazio indica que o efeito é configurado
+  // na montagem do Provider.
+  useEffect(() => {
+
+    const temporizador = setTimeout(() => {
+
+      setPerfil({
+        nome: 'Orion',
+        curso: 'Ciência da Computação'
+      });
+
+      setCarregando(false);
+
+    }, 1000);
+
+    // Limpeza do efeito: cancela o temporizador
+    // caso o Provider seja desmontado.
+    return () => {
+      clearTimeout(temporizador);
+    };
+
+  }, []);
+
+  // Função que atualiza o nome compartilhado.
+  function atualizarNome(novoNome) {
+    setPerfil(perfilAtual => ({
+      ...perfilAtual,
+      nome: novoNome
+    }));
+  }
+
+  // Context.Provider disponibiliza os dados
+  // e as funções para os componentes descendentes.
+  return (
+    <PerfilContext.Provider
+      value={{
+        perfil,
+        carregando,
+        atualizarNome
+      }}
+    >
+      {children}
+    </PerfilContext.Provider>
+  );
+}
+
+// ==================================================
+// 3. COMPONENTE QUE CONSOME O CONTEXTO
+// useContext permite acessar os dados compartilhados
+// sem receber nome e curso por meio de Props.
+// ==================================================
+
+function CartaoPerfil() {
+
+  const { perfil, carregando } = useContext(PerfilContext);
+
+  if (carregando) {
+    return (
+      <ActivityIndicator size="large" />
+    );
+  }
+
+  return (
+    <View style={styles.cartao}>
+      <Text style={styles.nome}>
+        {perfil.nome}
+      </Text>
+
+      <Text style={styles.curso}>
+        {perfil.curso}
+      </Text>
+    </View>
+  );
+}
+
+// ==================================================
+// 4. COMPONENTE PARA ATUALIZAR O PERFIL
+// Também utiliza useContext para acessar a função
+// que atualiza os dados compartilhados.
+// ==================================================
+
+function FormularioPerfil() {
+
+  // useState: controla o texto digitado localmente.
+  const [nomeDigitado, setNomeDigitado] = useState('');
+
+  const [mensagem, setMensagem] = useState('');
+
+  // useContext: acessa a função disponibilizada
+  // pelo Provider, sem precisar receber Props.
+  const { atualizarNome, carregando } = useContext(PerfilContext);
+
+  function salvar() {
+
+    const novoNome = nomeDigitado.trim();
+
+    if (novoNome.length === 0) {
+      setMensagem('Digite um nome antes de atualizar.');
+      return;
+    }
+
+    atualizarNome(novoNome);
+
+    setNomeDigitado('');
+    setMensagem('Perfil atualizado com sucesso!');
+  }
+
+  return (
+    <View style={styles.formulario}>
+
+      <Text style={styles.rotulo}>
+        Atualizar nome:
+      </Text>
+
+      <TextInput
+        style={styles.entrada}
+        placeholder="Digite o novo nome"
+        value={nomeDigitado}
+        onChangeText={setNomeDigitado}
+      />
+
+      <Pressable
+        style={styles.botao}
+        onPress={salvar}
+        disabled={carregando}
+      >
+        <Text style={styles.textoBotao}>
+          Atualizar perfil
+        </Text>
+      </Pressable>
+
+      {mensagem !== '' && (
+        <Text style={styles.mensagem}>
+          {mensagem}
+        </Text>
+      )}
+
+    </View>
+  );
+}
+
+// ==================================================
+// 5. COMPONENTE PRINCIPAL
+// O Provider envolve os componentes que precisam
+// acessar as informações compartilhadas.
+// ==================================================
+
+function ConteudoPrincipal() {
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Meu perfil acadêmico
+      </Text>
+
+      <CartaoPerfil />
+
+      <FormularioPerfil />
+
+    </View>
+  );
+}
+
+export default function App() {
+
+  return (
+    <PerfilProvider>
+      <ConteudoPrincipal />
+    </PerfilProvider>
+  );
+}
+
+// ==================================================
+// 6. ESTILIZAÇÃO
+// ==================================================
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f4f6fa',
+    padding: 24,
+    paddingTop: 60
+  },
+
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 24,
+    textAlign: 'center'
+  },
+
+  cartao: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 24
+  },
+
+  nome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#222222'
+  },
+
+  curso: {
+    fontSize: 16,
+    color: '#555555',
+    marginTop: 6
+  },
+
+  formulario: {
+    backgroundColor: '#ffffff',
+    padding: 18,
+    borderRadius: 12
+  },
+
+  rotulo: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8
+  },
+
+  entrada: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#cbd2df',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 12
+  },
+
+  botao: {
+    backgroundColor: '#17365d',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+
+  mensagem: {
+    fontSize: 14,
+    color: '#333333',
+    marginTop: 16,
+    textAlign: 'center'
+  }
+
+});
