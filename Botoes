@@ -1,0 +1,281 @@
+
+import { useState } from 'react';
+
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Alert
+} from 'react-native';
+
+export default function App() {
+
+  // Estados utilizados pelos exemplos
+  const [contador, setContador] = useState(0);
+  const [favorito, setFavorito] = useState(false);
+  const [ativo, setAtivo] = useState(true);
+  const [mensagem, setMensagem] = useState('');
+
+  return (
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Explorando botões no React Native
+      </Text>
+
+      {/* 1. BOTÃO SIMPLES */}
+      <Text style={styles.secao}>
+        1. Botão simples
+      </Text>
+
+      <Pressable
+        style={styles.botao}
+        onPress={() => setMensagem('Você pressionou o botão!')}
+      >
+        <Text style={styles.textoBotao}>
+          Clique aqui
+        </Text>
+      </Pressable>
+
+      {/* 2. BOTÃO COM FEEDBACK VISUAL */}
+      <Text style={styles.secao}>
+        2. Botão com efeito ao pressionar
+      </Text>
+
+      <Pressable
+        onPress={() => setMensagem('Ação executada!')}
+        style={({ pressed }) => [
+          styles.botao,
+          pressed && styles.botaoPressionado
+        ]}
+      >
+        <Text style={styles.textoBotao}>
+          Pressione e observe
+        </Text>
+      </Pressable>
+
+      {/* 3. BOTÃO COM CONTADOR */}
+      <Text style={styles.secao}>
+        3. Botão com contador
+      </Text>
+
+      <Pressable
+        style={styles.botaoVerde}
+        onPress={() => setContador(contador + 1)}
+      >
+        <Text style={styles.textoBotao}>
+          Adicionar +1
+        </Text>
+      </Pressable>
+
+      <Text style={styles.resultado}>
+        Cliques: {contador}
+      </Text>
+
+      {/* 4. BOTÃO DE ALTERNÂNCIA */}
+      <Text style={styles.secao}>
+        4. Botão de alternância
+      </Text>
+
+      <Pressable
+        style={[
+          styles.botao,
+          favorito && styles.botaoFavorito
+        ]}
+        onPress={() => setFavorito(!favorito)}
+      >
+        <Text style={styles.textoBotao}>
+          {favorito ? '★ Favorito' : '☆ Favoritar'}
+        </Text>
+      </Pressable>
+
+      {/* 5. BOTÃO DESABILITADO */}
+      <Text style={styles.secao}>
+        5. Botão habilitado ou desabilitado
+      </Text>
+
+      <Pressable
+        disabled={!ativo}
+        style={[
+          styles.botao,
+          !ativo && styles.botaoDesabilitado
+        ]}
+        onPress={() => setMensagem('Botão acionado!')}
+      >
+        <Text style={styles.textoBotao}>
+          {ativo ? 'Botão disponível' : 'Botão desabilitado'}
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.botaoSecundario}
+        onPress={() => setAtivo(!ativo)}
+      >
+        <Text style={styles.textoSecundario}>
+          {ativo ? 'Desabilitar botão' : 'Habilitar botão'}
+        </Text>
+      </Pressable>
+
+      {/* 6. BOTÃO COM CONFIRMAÇÃO */}
+      <Text style={styles.secao}>
+        6. Botão com caixa de diálogo
+      </Text>
+
+      <Pressable
+        style={styles.botaoVermelho}
+        onPress={() =>
+          Alert.alert(
+            'Confirmação',
+            'Deseja realmente excluir esta atividade?',
+            [
+              {
+                text: 'Cancelar',
+                style: 'cancel'
+              },
+              {
+                text: 'Excluir',
+                style: 'destructive',
+                onPress: () =>
+                  setMensagem('Atividade excluída!')
+              }
+            ]
+          )
+        }
+      >
+        <Text style={styles.textoBotao}>
+          Excluir atividade
+        </Text>
+      </Pressable>
+
+      {/* 7. BOTÃO COM OPACIDADE AO PRESSIONAR */}
+      <Text style={styles.secao}>
+        7. Botão com feedback de opacidade
+      </Text>
+
+      <Pressable
+        onPress={() => setMensagem('Salvo com sucesso!')}
+        style={({ pressed }) => ({
+          backgroundColor: '#6c4bb8',
+          padding: 14,
+          borderRadius: 8,
+          alignItems: 'center',
+          opacity: pressed ? 0.5 : 1
+        })}
+      >
+        <Text style={styles.textoBotao}>
+          Salvar alterações
+        </Text>
+      </Pressable>
+
+      {/* MENSAGEM DE RETORNO */}
+      {mensagem !== '' && (
+        <Text style={styles.mensagem}>
+          {mensagem}
+        </Text>
+      )}
+
+    </View>
+  );
+}
+
+// ESTILIZAÇÃO DOS COMPONENTES
+const styles = StyleSheet.create({
+
+  container: {
+    flexGrow: 1,
+    backgroundColor: '#f2f5f9',
+    padding: 24,
+    paddingTop: 45,
+    paddingBottom: 40
+  },
+
+  titulo: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 25,
+    textAlign: 'center'
+  },
+
+  secao: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#243b53',
+    marginTop: 20,
+    marginBottom: 10
+  },
+
+  botao: {
+    backgroundColor: '#17365d',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  botaoPressionado: {
+    opacity: 0.65,
+    transform: [{ scale: 0.97 }]
+  },
+
+  botaoVerde: {
+    backgroundColor: '#16803c',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  botaoFavorito: {
+    backgroundColor: '#d97706'
+  },
+
+  botaoDesabilitado: {
+    backgroundColor: '#9ca3af',
+    opacity: 0.6
+  },
+
+  botaoSecundario: {
+    borderWidth: 1,
+    borderColor: '#17365d',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    alignItems: 'center'
+  },
+
+  botaoVermelho: {
+    backgroundColor: '#c0392b',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: 'bold'
+  },
+
+  textoSecundario: {
+    color: '#17365d',
+    fontWeight: 'bold'
+  },
+
+  resultado: {
+    fontSize: 16,
+    color: '#16803c',
+    fontWeight: 'bold',
+    marginTop: 10
+  },
+
+  mensagem: {
+    backgroundColor: '#dff5e5',
+    color: '#166534',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  }
+
+});
