@@ -1,0 +1,434 @@
+import React, { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+
+export default function App() {
+  const [apiKey, setApiKey] = useState('');
+  const [pergunta, setPergunta] = useState('');
+  const [mensagens, setMensagens] = useState([]);
+  const [carregando, setCarregando] = useState(false);
+
+  // Temas que o usuário pode explorar
+  const sugestoes = [
+    'Explique Inteligência Artificial',
+    'Crie uma ideia de aplicativo',
+    'Ensine React Native',
+    'Crie um desafio de programação'
+  ];
+
+  // Envia a pergunta para a IA Gemini
+  async function consultarIA(texto = pergunta) {
+    if (!apiKey.trim()) {
+      alert('Informe sua chave de API Gemini.');
+      return;
+    }
+
+    if (!texto.trim() || carregando) return;
+
+    const novaMensagem = {
+      tipo: 'usuario',
+      texto: texto
+    };
+
+    const historico = [...mensagens, novaMensagem];
+
+    setMensagens(historico);
+    setPergunta('');
+    setCarregando(true);
+
+    try {
+      // Organiza o histórico para dar contexto à IA
+      const contexto = historico.map(item =>
+        `${item.tipo === 'usuario' ? 'Usuário' : 'IA'}: ${item.texto}`
+      ).join('\n\n');
+
+      const resposta = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/interactions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey.trim()
+          },
+          body: JSON.stringify({
+            model: 'gemini-3.8-flash',
+            input:
+              'Você é o IAdea, um assistente inteligente, ' +
+              'criativo, didático e amigável. Responda em português ' +
+              'brasileiro, com clareza e exemplos práticos. ' +
+              'Ajude principalmente com tecnologia, programação, ' +
+              'educação e criatividade.\n\n' +
+              contexto
+          })
+        }
+      );
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(
+          dados.error?.message || 'Erro ao consultar a IA.'
+        );
+      }
+
+      const textoResposta =
+        dados.output_text ||
+        'Não foi possível interpretar a resposta da IA.';
+
+      setMensagens(atual => [
+        ...atual,
+        {
+          tipo: 'ia',
+          texto: textoResposta
+        }
+      ]);
+
+    } catch (erro) {
+      setMensagens(atual => [
+        ...atual,
+        {
+          tipo: 'ia',
+          texto: 'Não consegui responder. Verifique sua chave ' +
+            'de API e sua conexão. Detalhe: ' + erro.message
+        }
+      ]);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+
+      <View style={styles.header}>
+        <Text style={styles.logo}>✦ IAdea</Text>
+        <Text style={styles.subtitulo}>
+          Seu laboratório de ideias inteligentes
+        </Text>
+      </View>
+
+      <View style={styles.configuracao}>
+        <Text style={styles.label}>Chave de API Gemini</Text>
+
+        <TextInput
+          style={styles.chave}
+          placeholder="Cole sua chave de API"
+          placeholderTextColor="#999"
+          value={apiKey}
+          onChangeText={setApiKey}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+
+        <Text style={styles.aviso}>
+          A chave é utilizada nesta sessão.
+        </Text>
+      </View>
+
+      <ScrollView
+        style={styles.conversa}
+        contentContainerStyle={styles.conteudo}
+        keyboardShouldPersistTaps="handled"
+      >
+
+        {mensagens.length === 0 && (
+          <View style={styles.boasVindas}>
+            <Text style={styles.emoji}>🤖</Text>
+
+            <Text style={styles.titulo}>
+              Olá! Como posso ajudar?
+            </Text>
+
+            <Text style={styles.descricao}>
+              Sou o IAdea. Posso explicar conceitos,
+              criar projetos, sugerir soluções e
+              ajudar você a programar.
+            </Text>
+
+            <Text style={styles.labelSugestao}>
+              EXPERIMENTE UMA IDEIA
+            </Text>
+
+            {sugestoes.map((item, index) => (
+              <Pressable
+                key={index}
+                style={styles.sugestao}
+                onPress={() => consultarIA(item)}
+              >
+                <Text style={styles.textoSugestao}>
+                  ✨ {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        {mensagens.map((item, index) => (
+          <View
+            key={index}
+            style={[
+              styles.balao,
+              item.tipo === 'usuario'
+                ? styles.balaoUsuario
+                : styles.balaoIA
+            ]}
+          >
+            <Text style={styles.identificacao}>
+              {item.tipo === 'usuario' ? 'VOCÊ' : '✦ IADEA'}
+            </Text>
+
+            <Text style={styles.textoMensagem}>
+              {item.texto}
+            </Text>
+          </View>
+        ))}
+
+        {carregando && (
+          <View style={styles.carregando}>
+            <ActivityIndicator color="#A78BFA" />
+            <Text style={styles.textoCarregando}>
+              A IA está pensando...
+            </Text>
+          </View>
+        )}
+
+      </ScrollView>
+
+      <View style={styles.rodape}>
+        <TextInput
+          style={styles.entrada}
+          placeholder="Digite sua pergunta..."
+          placeholderTextColor="#999"
+          value={pergunta}
+          onChangeText={setPergunta}
+          multiline
+        />
+
+        <Pressable
+          style={styles.botao}
+          onPress={() => consultarIA()}
+          disabled={carregando}
+        >
+          <Text style={styles.textoBotao}>➤</Text>
+        </Pressable>
+      </View>
+
+      <Text style={styles.credito}>
+        Desenvolvido com React Native + Gemini AI
+      </Text>
+
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#101225'
+  },
+
+  header: {
+    paddingTop: 48,
+    paddingBottom: 18,
+    paddingHorizontal: 22,
+    backgroundColor: '#191B38',
+    borderBottomWidth: 1,
+    borderBottomColor: '#303252'
+  },
+
+  logo: {
+    color: '#C4B5FD',
+    fontSize: 30,
+    fontWeight: 'bold'
+  },
+
+  subtitulo: {
+    color: '#B9B9D0',
+    fontSize: 13,
+    marginTop: 4
+  },
+
+  configuracao: {
+    padding: 14,
+    backgroundColor: '#191B38'
+  },
+
+  label: {
+    color: '#D8D5F0',
+    fontSize: 12,
+    marginBottom: 7
+  },
+
+  chave: {
+    backgroundColor: '#292B49',
+    borderRadius: 10,
+    padding: 12,
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#48466D'
+  },
+
+  aviso: {
+    color: '#9292B1',
+    fontSize: 10,
+    marginTop: 5
+  },
+
+  conversa: {
+    flex: 1
+  },
+
+  conteudo: {
+    padding: 18,
+    paddingBottom: 25
+  },
+
+  boasVindas: {
+    alignItems: 'center',
+    paddingTop: 25
+  },
+
+  emoji: {
+    fontSize: 55,
+    marginBottom: 12
+  },
+
+  titulo: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center'
+  },
+
+  descricao: {
+    color: '#B9B9D0',
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginTop: 12,
+    marginBottom: 25
+  },
+
+  labelSugestao: {
+    color: '#A78BFA',
+    fontWeight: 'bold',
+    fontSize: 11,
+    alignSelf: 'flex-start',
+    marginBottom: 12
+  },
+
+  sugestao: {
+    width: '100%',
+    padding: 15,
+    backgroundColor: '#252744',
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#424268'
+  },
+
+  textoSugestao: {
+    color: '#E6E2FF',
+    fontSize: 14
+  },
+
+  balao: {
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 14,
+    maxWidth: '95%'
+  },
+
+  balaoUsuario: {
+    backgroundColor: '#5141A3',
+    alignSelf: 'flex-end'
+  },
+
+  balaoIA: {
+    backgroundColor: '#252744',
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#414365'
+  },
+
+  identificacao: {
+    color: '#C4B5FD',
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginBottom: 7
+  },
+
+  textoMensagem: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 22
+  },
+
+  carregando: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12
+  },
+
+  textoCarregando: {
+    color: '#C4B5FD',
+    fontSize: 13
+  },
+
+  rodape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#191B38',
+    borderTopWidth: 1,
+    borderTopColor: '#303252'
+  },
+
+  entrada: {
+    flex: 1,
+    backgroundColor: '#292B49',
+    color: '#FFFFFF',
+    borderRadius: 14,
+    padding: 13,
+    maxHeight: 100,
+    fontSize: 14
+  },
+
+  botao: {
+    backgroundColor: '#7955D9',
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 9
+  },
+
+  textoBotao: {
+    color: '#FFFFFF',
+    fontSize: 23,
+    fontWeight: 'bold'
+  },
+
+  credito: {
+    color: '#777895',
+    fontSize: 10,
+    textAlign: 'center',
+    paddingBottom: 8,
+    backgroundColor: '#191B38'
+  }
+});
