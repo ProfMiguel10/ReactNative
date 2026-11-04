@@ -1,0 +1,470 @@
+
+import React, { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  StyleSheet,
+  Alert,
+  ScrollView
+} from 'react-native';
+
+export default function App() {
+
+  // Estados do cadastro de produtos
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [estoque, setEstoque] = useState('');
+
+  // Lista de produtos cadastrados
+  const [produtos, setProdutos] = useState([]);
+
+  // Lista de produtos adicionados ao carrinho
+  const [carrinho, setCarrinho] = useState([]);
+
+  // Cadastra um novo produto
+  function cadastrarProduto() {
+
+    if (!nome.trim() || !preco || !estoque) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
+      return;
+    }
+
+    const valor = Number(preco.replace(',', '.'));
+    const quantidade = Number(estoque);
+
+    if (
+      !Number.isFinite(valor) ||
+      !Number.isInteger(quantidade) ||
+      valor <= 0 ||
+      quantidade <= 0
+    ) {
+      Alert.alert('Atenção', 'Informe preço e estoque válidos!');
+      return;
+    }
+
+    const novoProduto = {
+      id: Date.now().toString(),
+      nome: nome.trim(),
+      preco: valor,
+      estoque: quantidade
+    };
+
+    setProdutos([...produtos, novoProduto]);
+
+    // Limpa os campos
+    setNome('');
+    setPreco('');
+    setEstoque('');
+
+    Alert.alert('Sucesso', 'Produto cadastrado!');
+  }
+
+  // Adiciona produto ao carrinho
+  function adicionarCarrinho(produto) {
+
+    const itemExistente = carrinho.find(
+      item => item.id === produto.id
+    );
+
+    const quantidadeAtual = itemExistente
+      ? itemExistente.quantidade
+      : 0;
+
+    if (quantidadeAtual >= produto.estoque) {
+      Alert.alert('Estoque insuficiente');
+      return;
+    }
+
+    if (itemExistente) {
+
+      setCarrinho(carrinho.map(item =>
+        item.id === produto.id
+          ? { ...item, quantidade: item.quantidade + 1 }
+          : item
+      ));
+
+    } else {
+
+      setCarrinho([
+        ...carrinho,
+        { ...produto, quantidade: 1 }
+      ]);
+
+    }
+  }
+
+  // Altera a quantidade de um item
+  function alterarQuantidade(id, variacao) {
+
+    const produto = produtos.find(p => p.id === id);
+
+    setCarrinho(carrinho.map(item => {
+
+      if (item.id !== id) return item;
+
+      const novaQuantidade = item.quantidade + variacao;
+
+      if (novaQuantidade > produto.estoque) {
+        Alert.alert('Estoque insuficiente');
+        return item;
+      }
+
+      return {
+        ...item,
+        quantidade: novaQuantidade
+      };
+
+    }).filter(item => item.quantidade > 0));
+  }
+
+  // Calcula o valor total do carrinho
+  const total = carrinho.reduce(
+    (soma, item) => soma + item.preco * item.quantidade,
+    0
+  );
+
+  // Formata valores em reais
+  function moeda(valor) {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  return (
+
+    <ScrollView style={styles.container}>
+
+      <Text style={styles.titulo}>
+        🛍️ Minha Lojinha
+      </Text>
+
+      {/* CADASTRO DE PRODUTOS */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Cadastro de Produtos
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Nome do produto"
+          value={nome}
+          onChangeText={setNome}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Preço (ex: 29.90)"
+          keyboardType="decimal-pad"
+          value={preco}
+          onChangeText={setPreco}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Quantidade em estoque"
+          keyboardType="numeric"
+          value={estoque}
+          onChangeText={setEstoque}
+        />
+
+        <Pressable
+          style={styles.botao}
+          onPress={cadastrarProduto}
+        >
+          <Text style={styles.textoBotao}>
+            Cadastrar Produto
+          </Text>
+        </Pressable>
+
+      </View>
+
+      {/* VITRINE DE PRODUTOS */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Produtos Disponíveis
+        </Text>
+
+        {produtos.length === 0 && (
+          <Text style={styles.vazio}>
+            Nenhum produto cadastrado.
+          </Text>
+        )}
+
+        {produtos.map(produto => {
+
+          const quantidadeNoCarrinho =
+            carrinho.find(item => item.id === produto.id)
+              ?.quantidade || 0;
+
+          return (
+
+            <View key={produto.id} style={styles.produto}>
+
+              <View style={{ flex: 1 }}>
+
+                <Text style={styles.nomeProduto}>
+                  {produto.nome}
+                </Text>
+
+                <Text>
+                  {moeda(produto.preco)}
+                </Text>
+
+                <Text style={styles.estoque}>
+                  Disponível: {produto.estoque - quantidadeNoCarrinho}
+                </Text>
+
+              </View>
+
+              <Pressable
+                style={styles.botaoPequeno}
+                onPress={() => adicionarCarrinho(produto)}
+              >
+                <Text style={styles.textoBotao}>
+                  + Carrinho
+                </Text>
+              </Pressable>
+
+            </View>
+
+          );
+
+        })}
+
+      </View>
+
+      {/* CARRINHO DE COMPRAS */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          🛒 Meu Carrinho
+        </Text>
+
+        {carrinho.length === 0 && (
+          <Text style={styles.vazio}>
+            Seu carrinho está vazio.
+          </Text>
+        )}
+
+        {carrinho.map(item => (
+
+          <View key={item.id} style={styles.produto}>
+
+            <View style={{ flex: 1 }}>
+
+              <Text style={styles.nomeProduto}>
+                {item.nome}
+              </Text>
+
+              <Text>
+                {moeda(item.preco)} cada
+              </Text>
+
+              <Text style={styles.totalItem}>
+                Subtotal: {moeda(item.preco * item.quantidade)}
+              </Text>
+
+            </View>
+
+            <View style={styles.controles}>
+
+              <Pressable
+                style={styles.controle}
+                onPress={() => alterarQuantidade(item.id, -1)}
+              >
+                <Text>-</Text>
+              </Pressable>
+
+              <Text style={styles.quantidade}>
+                {item.quantidade}
+              </Text>
+
+              <Pressable
+                style={styles.controle}
+                onPress={() => alterarQuantidade(item.id, 1)}
+              >
+                <Text>+</Text>
+              </Pressable>
+
+            </View>
+
+          </View>
+
+        ))}
+
+        <View style={styles.resumo}>
+
+          <Text style={styles.total}>
+            TOTAL: {moeda(total)}
+          </Text>
+
+          <Pressable
+            style={styles.botaoFinalizar}
+            onPress={() => {
+              if (carrinho.length === 0) {
+                Alert.alert('Atenção', 'Adicione produtos ao carrinho.');
+                return;
+              }
+
+              Alert.alert(
+                'Compra realizada!',
+                `Valor total: ${moeda(total)}`,
+                [{
+                  text: 'OK',
+                  onPress: () => setCarrinho([])
+                }]
+              );
+            }}
+          >
+            <Text style={styles.textoBotao}>
+              Finalizar Compra
+            </Text>
+          </Pressable>
+
+        </View>
+
+      </View>
+
+    </ScrollView>
+  );
+}
+
+// ESTILIZAÇÃO DA APLICAÇÃO
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    padding: 16
+  },
+
+  titulo: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#1e3a8a'
+  },
+
+  card: {
+    backgroundColor: '#ffffff',
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 18,
+    elevation: 3
+  },
+
+  subtitulo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#1e293b'
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16
+  },
+
+  botao: {
+    backgroundColor: '#2563eb',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontWeight: 'bold'
+  },
+
+  produto: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingVertical: 14,
+    gap: 10
+  },
+
+  nomeProduto: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#334155'
+  },
+
+  estoque: {
+    color: '#64748b',
+    fontSize: 12,
+    marginTop: 4
+  },
+
+  botaoPequeno: {
+    backgroundColor: '#16a34a',
+    padding: 10,
+    borderRadius: 7
+  },
+
+  vazio: {
+    color: '#64748b',
+    paddingVertical: 10
+  },
+
+  controles: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+
+  controle: {
+    backgroundColor: '#e2e8f0',
+    padding: 9,
+    borderRadius: 6
+  },
+
+  quantidade: {
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+
+  totalItem: {
+    color: '#15803d',
+    fontWeight: 'bold',
+    marginTop: 5
+  },
+
+  resumo: {
+    marginTop: 20
+  },
+
+  total: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    color: '#1e3a8a',
+    marginBottom: 15
+  },
+
+  botaoFinalizar: {
+    backgroundColor: '#16a34a',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center'
+  }
+
+});
