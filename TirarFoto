@@ -1,0 +1,76 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Button,
+  Image,
+  StyleSheet,
+  Alert,
+  ScrollView
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+export default function App() {
+  const [foto, setFoto] = useState(null);
+
+  async function tirarFoto() {
+    try {
+      const permissao =
+        await ImagePicker.requestCameraPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          'Permissão necessária',
+          'Autorize o acesso à câmera para tirar uma foto.'
+        );
+        return;
+      }
+
+      const resultado = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8
+      });
+
+      if (!resultado.canceled && resultado.assets?.length > 0) {
+        setFoto(resultado.assets[0].uri);
+      }
+    } catch (erro) {
+      Alert.alert('Erro', 'Não foi possível abrir a câmera.');
+    }
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Registro fotográfico</Text>
+
+      <Button title="Tirar foto" onPress={tirarFoto} />
+
+      {foto ? (
+        <Image source={{ uri: foto }} style={styles.imagem} />
+      ) : (
+        <Text>Ainda não há fotografia registrada.</Text>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    gap: 20
+  },
+  titulo: {
+    fontSize: 25,
+    fontWeight: 'bold'
+  },
+  imagem: {
+    width: 300,
+    height: 300,
+    borderRadius: 12,
+    resizeMode: 'cover'
+  }
+});
