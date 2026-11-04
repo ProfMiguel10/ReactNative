@@ -1,0 +1,79 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Switch,
+  StyleSheet
+} from 'react-native';
+
+import AsyncStorage from
+  '@react-native-async-storage/async-storage';
+
+export default function App() {
+  const [notificacoes, setNotificacoes] =
+    useState(true);
+
+  useEffect(() => {
+    async function carregarPreferencia() {
+      try {
+        const valor = await AsyncStorage.getItem(
+          'notificacoes'
+        );
+
+        if (valor !== null) {
+          setNotificacoes(valor === 'true');
+        }
+      } catch (erro) {
+        console.error(
+          'Não foi possível carregar a preferência.'
+        );
+      }
+    }
+
+    carregarPreferencia();
+  }, []);
+
+  async function alterarPreferencia(valor) {
+    setNotificacoes(valor);
+
+    try {
+      await AsyncStorage.setItem(
+        'notificacoes',
+        String(valor)
+      );
+    } catch (erro) {
+      console.error(
+        'Não foi possível salvar a preferência.'
+      );
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>
+        Configurações do aplicativo
+      </Text>
+
+      <Text>Receber notificações</Text>
+
+      <Switch
+        value={notificacoes}
+        onValueChange={alterarPreferencia}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24
+  },
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20
+  }
+});
