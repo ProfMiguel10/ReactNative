@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ActivityIndicator
+} from 'react-native';
+import {
+  CameraView,
+  useCameraPermissions
+} from 'expo-camera';
+
+export default function App() {
+  const [permissao, solicitarPermissao] = useCameraPermissions();
+  const [resultado, setResultado] = useState('');
+  const [lido, setLido] = useState(false);
+
+  if (!permissao) {
+    return (
+      <View style={styles.centralizado}>
+        <ActivityIndicator size="large" />
+        <Text>Verificando permissão da câmera...</Text>
+      </View>
+    );
+  }
+
+  if (!permissao.granted) {
+    return (
+      <View style={styles.centralizado}>
+        <Text style={styles.titulo}>Acesso à câmera</Text>
+        <Text>Precisamos da sua autorização para ler QR Codes.</Text>
+        <Button
+          title="Conceder permissão"
+          onPress={solicitarPermissao}
+        />
+      </View>
+    );
+  }
+
+  function aoLerCodigo(evento) {
+    if (lido) return;
+
+    setLido(true);
+    setResultado(evento.data);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Leitor de QR Code</Text>
+
+      <View style={styles.cameraContainer}>
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr']
+          }}
+          onBarcodeScanned={lido ? undefined : aoLerCodigo}
+        />
+      </View>
+
+      <Text style={styles.instrucao}>
+        Posicione o QR Code diante da câmera.
+      </Text>
+
+      {resultado !== '' && (
+        <View style={styles.resultado}>
+          <Text style={styles.subtitulo}>Conteúdo identificado:</Text>
+          <Text selectable>{resultado}</Text>
+          <Button
+            title="Ler outro código"
+            onPress={() => {
+              setResultado('');
+              setLido(false);
+            }}
+          />
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    gap: 16
+  },
+  centralizado: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    gap: 16
+  },
+  titulo: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  cameraContainer: {
+    height: 320,
+    overflow: 'hidden',
+    borderRadius: 16
+  },
+  camera: {
+    flex: 1
+  },
+  instrucao: {
+    textAlign: 'center',
+    fontSize: 16
+  },
+  resultado: {
+    backgroundColor: '#f1f5f9',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12
+  },
+  subtitulo: {
+    fontWeight: 'bold'
+  }
+});
