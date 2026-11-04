@@ -1,0 +1,390 @@
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  StyleSheet
+} from 'react-native';
+
+const cursos = [
+  {
+    id: '1',
+    nome: 'Ciência da Computação',
+    categoria: 'Bacharelado',
+    duracao: '8 semestres'
+  },
+  {
+    id: '2',
+    nome: 'Engenharia de Software',
+    categoria: 'Bacharelado',
+    duracao: '8 semestres'
+  },
+  {
+    id: '3',
+    nome: 'Sistemas de Informação',
+    categoria: 'Bacharelado',
+    duracao: '8 semestres'
+  },
+  {
+    id: '4',
+    nome: 'Análise e Desenvolvimento de Sistemas',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '5',
+    nome: 'Ciência de Dados',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '6',
+    nome: 'Redes de Computadores',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '7',
+    nome: 'Segurança da Informação',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '8',
+    nome: 'Sistemas para Internet',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '9',
+    nome: 'Inteligência Artificial',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  },
+  {
+    id: '10',
+    nome: 'Gestão da Tecnologia da Informação',
+    categoria: 'Tecnólogo',
+    duracao: '5 semestres'
+  }
+];
+
+const ITENS_POR_PAGINA = 3;
+
+export default function App() {
+  const [pesquisa, setPesquisa] = useState('');
+  const [categoria, setCategoria] = useState('Todos');
+  const [pagina, setPagina] = useState(1);
+
+  const cursosFiltrados = cursos.filter((curso) => {
+    const correspondePesquisa =
+      curso.nome
+        .toLowerCase()
+        .includes(pesquisa.trim().toLowerCase());
+
+    const correspondeCategoria =
+      categoria === 'Todos' ||
+      curso.categoria === categoria;
+
+    return correspondePesquisa && correspondeCategoria;
+  });
+
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(
+      cursosFiltrados.length / ITENS_POR_PAGINA
+    )
+  );
+
+  const paginaAtual = Math.min(pagina, totalPaginas);
+
+  const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+
+  const cursosDaPagina = cursosFiltrados.slice(
+    inicio,
+    inicio + ITENS_POR_PAGINA
+  );
+
+  function alterarPesquisa(texto) {
+    setPesquisa(texto);
+    setPagina(1);
+  }
+
+  function alterarCategoria(novaCategoria) {
+    setCategoria(novaCategoria);
+    setPagina(1);
+  }
+
+  function mudarPagina(novaPagina) {
+    if (novaPagina >= 1 && novaPagina <= totalPaginas) {
+      setPagina(novaPagina);
+    }
+  }
+
+  function renderizarCurso({ item }) {
+    return (
+      <View style={styles.cartao}>
+        <Text style={styles.nomeCurso}>
+          {item.nome}
+        </Text>
+
+        <Text style={styles.detalhe}>
+          Categoria: {item.categoria}
+        </Text>
+
+        <Text style={styles.detalhe}>
+          Duração: {item.duracao}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>
+        Catálogo de cursos
+      </Text>
+
+      <Text style={styles.subtitulo}>
+        Pesquise, filtre e navegue pelos resultados.
+      </Text>
+
+      <TextInput
+        style={styles.pesquisa}
+        placeholder="Pesquisar curso..."
+        value={pesquisa}
+        onChangeText={alterarPesquisa}
+        autoCapitalize="none"
+        clearButtonMode="while-editing"
+      />
+
+      <Text style={styles.rotulo}>
+        Filtrar por categoria
+      </Text>
+
+      <View style={styles.filtros}>
+        {['Todos', 'Bacharelado', 'Tecnólogo'].map(
+          (opcao) => {
+            const selecionada = categoria === opcao;
+
+            return (
+              <Pressable
+                key={opcao}
+                style={[
+                  styles.botaoFiltro,
+                  selecionada && styles.filtroSelecionado
+                ]}
+                onPress={() => alterarCategoria(opcao)}
+              >
+                <Text
+                  style={[
+                    styles.textoFiltro,
+                    selecionada &&
+                      styles.textoFiltroSelecionado
+                  ]}
+                >
+                  {opcao}
+                </Text>
+              </Pressable>
+            );
+          }
+        )}
+      </View>
+
+      <Text style={styles.contagem}>
+        {cursosFiltrados.length} curso(s) encontrado(s)
+      </Text>
+
+      <FlatList
+        data={cursosDaPagina}
+        renderItem={renderizarCurso}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.lista}
+        ListEmptyComponent={
+          <Text style={styles.vazio}>
+            Nenhum curso encontrado.
+            {'\n'}
+            Experimente alterar a pesquisa ou o filtro.
+          </Text>
+        }
+      />
+
+      <View style={styles.paginacao}>
+        <Pressable
+          style={[
+            styles.botaoPagina,
+            paginaAtual === 1 && styles.botaoDesabilitado
+          ]}
+          disabled={paginaAtual === 1}
+          onPress={() => mudarPagina(paginaAtual - 1)}
+        >
+          <Text style={styles.textoPagina}>
+            Anterior
+          </Text>
+        </Pressable>
+
+        <Text style={styles.numeroPagina}>
+          Página {paginaAtual} de {totalPaginas}
+        </Text>
+
+        <Pressable
+          style={[
+            styles.botaoPagina,
+            paginaAtual === totalPaginas &&
+              styles.botaoDesabilitado
+          ]}
+          disabled={paginaAtual === totalPaginas}
+          onPress={() => mudarPagina(paginaAtual + 1)}
+        >
+          <Text style={styles.textoPagina}>
+            Próxima
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 55,
+    paddingHorizontal: 18,
+    paddingBottom: 12,
+    backgroundColor: '#F8FAFC'
+  },
+
+  titulo: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    color: '#1E293B'
+  },
+
+  subtitulo: {
+    fontSize: 14,
+    color: '#64748B',
+    marginTop: 6,
+    marginBottom: 18
+  },
+
+  pesquisa: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 10,
+    padding: 13,
+    fontSize: 16
+  },
+
+  rotulo: {
+    marginTop: 16,
+    marginBottom: 8,
+    fontWeight: 'bold',
+    color: '#334155'
+  },
+
+  filtros: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+
+  botaoFiltro: {
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF'
+  },
+
+  filtroSelecionado: {
+    backgroundColor: '#1D4ED8',
+    borderColor: '#1D4ED8'
+  },
+
+  textoFiltro: {
+    color: '#334155',
+    fontSize: 13
+  },
+
+  textoFiltroSelecionado: {
+    color: '#FFFFFF',
+    fontWeight: 'bold'
+  },
+
+  contagem: {
+    marginTop: 16,
+    marginBottom: 8,
+    color: '#475569',
+    fontSize: 13
+  },
+
+  lista: {
+    paddingBottom: 12
+  },
+
+  cartao: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0'
+  },
+
+  nomeCurso: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1E40AF',
+    marginBottom: 8
+  },
+
+  detalhe: {
+    fontSize: 14,
+    color: '#475569',
+    marginTop: 3
+  },
+
+  vazio: {
+    textAlign: 'center',
+    color: '#64748B',
+    marginTop: 30,
+    lineHeight: 23
+  },
+
+  paginacao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0'
+  },
+
+  botaoPagina: {
+    backgroundColor: '#1D4ED8',
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    borderRadius: 8
+  },
+
+  botaoDesabilitado: {
+    backgroundColor: '#94A3B8'
+  },
+
+  textoPagina: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 13
+  },
+
+  numeroPagina: {
+    color: '#334155',
+    fontWeight: 'bold',
+    fontSize: 12
+  }
+});
