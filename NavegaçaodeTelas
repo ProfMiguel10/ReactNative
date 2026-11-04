@@ -1,0 +1,240 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ScrollView
+} from 'react-native';
+
+export default function App() {
+  const [tela, setTela] = useState('inicio');
+
+  function renderizarConteudo() {
+    if (tela === 'inicio') {
+      return (
+        <View style={styles.cartao}>
+          <Text style={styles.titulo}>
+            Bem-vindo ao aplicativo!
+          </Text>
+
+          <Text style={styles.paragrafo}>
+            Este é um exemplo de navegação
+            entre telas com React Native.
+          </Text>
+
+          <Text style={styles.paragrafo}>
+            Utilize o menu para acessar
+            as demais funcionalidades.
+          </Text>
+        </View>
+      );
+    }
+
+    if (tela === 'estudantes') {
+      return (
+        <View style={styles.cartao}>
+          <Text style={styles.titulo}>
+            Área de estudantes
+          </Text>
+
+          <Text style={styles.paragrafo}>
+            Aqui poderiam ser apresentados
+            os dados dos estudantes.
+          </Text>
+
+          <Text style={styles.item}>
+            Ana - Ciência da Computação
+          </Text>
+
+          <Text style={styles.item}>
+            João - Engenharia de Software
+          </Text>
+
+          <Text style={styles.item}>
+            Clara - Sistemas de Informação
+          </Text>
+        </View>
+      );
+    }
+
+    if (tela === 'sobre') {
+      return (
+        <View style={styles.cartao}>
+          <Text style={styles.titulo}>
+            Sobre o aplicativo
+          </Text>
+
+          <Text style={styles.paragrafo}>
+            Aplicativo didático desenvolvido
+            com React Native.
+          </Text>
+
+          <Text style={styles.paragrafo}>
+            O objetivo é demonstrar como
+            organizar diferentes telas.
+          </Text>
+        </View>
+      );
+    }
+
+    return null;
+  }
+
+  function criarBotao(nome, destino) {
+    const selecionado = tela === destino;
+
+    return (
+      <Pressable
+        key={destino}
+        style={[
+          styles.botaoMenu,
+          selecionado && styles.botaoSelecionado
+        ]}
+        onPress={() => setTela(destino)}
+      >
+        <Text
+          style={[
+            styles.textoMenu,
+            selecionado && styles.textoSelecionado
+          ]}
+        >
+          {nome}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.cabecalho}>
+        <Text style={styles.nomeApp}>
+          Minha Faculdade
+        </Text>
+
+        <Text style={styles.subtitulo}>
+          Navegação entre telas
+        </Text>
+      </View>
+
+      <View style={styles.menu}>
+        {criarBotao('Início', 'inicio')}
+        {criarBotao('Estudantes', 'estudantes')}
+        {criarBotao('Sobre', 'sobre')}
+      </View>
+
+      <ScrollView
+        style={styles.conteudo}
+        contentContainerStyle={styles.conteudoInterno}
+      >
+        {renderizarConteudo()}
+      </ScrollView>
+
+      <View style={styles.rodape}>
+        <Text style={styles.textoRodape}>
+          Tela atual: {tela}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F1F5F9'
+  },
+
+  cabecalho: {
+    backgroundColor: '#1D4ED8',
+    paddingTop: 55,
+    paddingBottom: 22,
+    paddingHorizontal: 20
+  },
+
+  nomeApp: {
+    fontSize: 25,
+    color: '#FFFFFF',
+    fontWeight: 'bold'
+  },
+
+  subtitulo: {
+    fontSize: 14,
+    color: '#DBEAFE',
+    marginTop: 5
+  },
+
+  menu: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    padding: 8,
+    justifyContent: 'space-around'
+  },
+
+  botaoMenu: {
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 8
+  },
+
+  botaoSelecionado: {
+    backgroundColor: '#DBEAFE'
+  },
+
+  textoMenu: {
+    color: '#334155',
+    fontWeight: '500'
+  },
+
+  textoSelecionado: {
+    color: '#1D4ED8',
+    fontWeight: 'bold'
+  },
+
+  conteudo: {
+    flex: 1
+  },
+
+  conteudoInterno: {
+    padding: 20
+  },
+
+  cartao: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12
+  },
+
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 14
+  },
+
+  paragrafo: {
+    fontSize: 16,
+    color: '#475569',
+    lineHeight: 24,
+    marginBottom: 12
+  },
+
+  item: {
+    backgroundColor: '#EFF6FF',
+    padding: 14,
+    borderRadius: 8,
+    marginTop: 8,
+    color: '#1E40AF'
+  },
+
+  rodape: {
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF'
+  },
+
+  textoRodape: {
+    color: '#64748B',
+    fontSize: 12
+  }
+});
