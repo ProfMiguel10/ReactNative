@@ -1,0 +1,310 @@
+import React, { useState, useEffect } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Alert
+} from 'react-native';
+
+import { initializeApp } from 'firebase/app';
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from 'firebase/firestore';
+
+// 1. Configuração do Firebase
+const firebaseConfig = {
+  apiKey: 'SUA_API_KEY',
+  authDomain: 'SEU_PROJETO.firebaseapp.com',
+  projectId: 'SEU_PROJECT_ID',
+  storageBucket: 'SEU_STORAGE_BUCKET',
+  messagingSenderId: 'SEU_MESSAGING_SENDER_ID',
+  appId: 'SEU_APP_ID'
+};
+
+// 2. Inicialização do Firebase
+const app = initializeApp(firebaseConfig);
+
+// 3. Conexão com Firestore
+const db = getFirestore(app);
+
+export default function App() {
+
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [produtos, setProdutos] = useState([]);
+  const [carrinho, setCarrinho] = useState([]);
+
+  // 4. Consultar produtos no Firebase
+  async function listarProdutos() {
+
+    try {
+
+      const resultado = await getDocs(
+        collection(db, 'produtos')
+      );
+
+      const lista = resultado.docs.map(documento => ({
+        id: documento.id,
+        ...documento.data()
+      }));
+
+      setProdutos(lista);
+
+    } catch (erro) {
+      Alert.alert('Erro', 'Não foi possível consultar os produtos.');
+      console.log(erro);
+    }
+  }
+
+  // 5. Carregar produtos ao abrir a aplicação
+  useEffect(() => {
+    listarProdutos();
+  }, []);
+
+  // 6. Cadastrar produto no Firebase
+  async function cadastrarProduto() {
+
+    const valor = Number(preco.replace(',', '.'));
+
+    if (!nome.trim() || !Number.isFinite(valor) || valor <= 0) {
+      Alert.alert('Atenção', 'Informe nome e preço válido!');
+      return;
+    }
+
+    try {
+
+      await addDoc(collection(db, 'produtos'), {
+        nome: nome.trim(),
+        preco: valor
+      });
+
+      setNome('');
+      setPreco('');
+
+      await listarProdutos();
+
+      Alert.alert('Sucesso', 'Produto cadastrado no Firebase!');
+
+    } catch (erro) {
+      Alert.alert('Erro', 'Falha ao cadastrar produto.');
+      console.log(erro);
+    }
+  }
+
+  // 7. Adicionar produto ao carrinho
+  function adicionarCarrinho(produto) {
+
+    setCarrinho([...carrinho, produto]);
+
+  }
+
+  // 8. Calcular total da compra
+  const total = carrinho.reduce(
+    (soma, item) => soma + item.preco,
+    0
+  );
+
+  // Formatação monetária
+  function moeda(valor) {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  return (
+
+    <ScrollView style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Minha Lojinha
+      </Text>
+
+      {/* CADASTRO */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Cadastro de Produtos
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Nome do produto"
+          value={nome}
+          onChangeText={setNome}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Preço"
+          keyboardType="decimal-pad"
+          value={preco}
+          onChangeText={setPreco}
+        />
+
+        <Pressable
+          style={styles.botao}
+          onPress={cadastrarProduto}
+        >
+          <Text style={styles.textoBotao}>
+            Cadastrar Produto
+          </Text>
+        </Pressable>
+
+      </View>
+
+      {/* LISTAGEM */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Produtos Cadastrados
+        </Text>
+
+        {produtos.map(item => (
+
+          <View key={item.id} style={styles.item}>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.nome}>
+                {item.nome}
+              </Text>
+
+              <Text>{moeda(item.preco)}</Text>
+            </View>
+
+            <Pressable
+              style={styles.botaoAdicionar}
+              onPress={() => adicionarCarrinho(item)}
+            >
+              <Text style={styles.textoBotao}>
+                + Carrinho
+              </Text>
+            </Pressable>
+
+          </View>
+
+        ))}
+
+      </View>
+
+      {/* CARRINHO */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Carrinho de Compras
+        </Text>
+
+        {carrinho.map((item, index) => (
+
+          <Text key={index} style={styles.item}>
+            {item.nome} - {moeda(item.preco)}
+          </Text>
+
+        ))}
+
+        <Text style={styles.total}>
+          Total: {moeda(total)}
+        </Text>
+
+        <Pressable
+          style={styles.botao}
+          onPress={() => setCarrinho([])}
+        >
+          <Text style={styles.textoBotao}>
+            Limpar Carrinho
+          </Text>
+        </Pressable>
+
+      </View>
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    padding: 16
+  },
+
+  titulo: {
+    fontSize: 27,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#1e3a8a'
+  },
+
+  card: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 18
+  },
+
+  subtitulo: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    marginBottom: 15
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12
+  },
+
+  botao: {
+    backgroundColor: '#2563eb',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  botaoAdicionar: {
+    backgroundColor: '#16a34a',
+    padding: 10,
+    borderRadius: 7
+  },
+
+  textoBotao: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+
+  nome: {
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  total: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#15803d',
+    marginVertical: 18
+  }
+
+});
