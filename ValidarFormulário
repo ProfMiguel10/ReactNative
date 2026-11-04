@@ -1,0 +1,281 @@
+import React, { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  Alert
+} from 'react-native';
+
+export default function App() {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [idade, setIdade] = useState('');
+
+  const [erros, setErros] = useState({});
+  const [cadastro, setCadastro] = useState(null);
+
+  function validarFormulario() {
+    const novosErros = {};
+
+    if (nome.trim().length < 3) {
+      novosErros.nome =
+        'Informe um nome com pelo menos 3 caracteres.';
+    }
+
+    const padraoEmail =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!padraoEmail.test(email.trim())) {
+      novosErros.email =
+        'Informe um e-mail em formato válido.';
+    }
+
+    const idadeNumerica = Number(idade);
+
+    if (
+      idade.trim() === '' ||
+      !Number.isInteger(idadeNumerica) ||
+      idadeNumerica < 16 ||
+      idadeNumerica > 100
+    ) {
+      novosErros.idade =
+        'Informe uma idade inteira entre 16 e 100.';
+    }
+
+    setErros(novosErros);
+
+    return Object.keys(novosErros).length === 0;
+  }
+
+  function cadastrar() {
+    setCadastro(null);
+
+    if (!validarFormulario()) {
+      return;
+    }
+
+    const novoCadastro = {
+      nome: nome.trim(),
+      email: email.trim(),
+      idade: Number(idade)
+    };
+
+    setCadastro(novoCadastro);
+
+    Alert.alert(
+      'Cadastro validado',
+      'Os dados foram validados com sucesso.'
+    );
+  }
+
+  function limparFormulario() {
+    setNome('');
+    setEmail('');
+    setIdade('');
+    setErros({});
+    setCadastro(null);
+  }
+
+  return (
+    <ScrollView
+      style={styles.tela}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.titulo}>
+        Cadastro de estudante
+      </Text>
+
+      <Text style={styles.descricao}>
+        Preencha os campos para validar os dados.
+      </Text>
+
+      <Text style={styles.rotulo}>Nome completo</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Digite seu nome"
+        value={nome}
+        onChangeText={setNome}
+        autoCapitalize="words"
+        maxLength={100}
+      />
+
+      {erros.nome && (
+        <Text style={styles.erro}>{erros.nome}</Text>
+      )}
+
+      <Text style={styles.rotulo}>E-mail</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="exemplo@email.com"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        maxLength={150}
+      />
+
+      {erros.email && (
+        <Text style={styles.erro}>{erros.email}</Text>
+      )}
+
+      <Text style={styles.rotulo}>Idade</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Digite sua idade"
+        value={idade}
+        onChangeText={setIdade}
+        keyboardType="number-pad"
+        maxLength={3}
+      />
+
+      {erros.idade && (
+        <Text style={styles.erro}>{erros.idade}</Text>
+      )}
+
+      <Pressable
+        style={styles.botao}
+        onPress={cadastrar}
+      >
+        <Text style={styles.textoBotao}>
+          Validar cadastro
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.botaoSecundario}
+        onPress={limparFormulario}
+      >
+        <Text style={styles.textoSecundario}>
+          Limpar formulário
+        </Text>
+      </Pressable>
+
+      {cadastro && (
+        <View style={styles.resultado}>
+          <Text style={styles.tituloResultado}>
+            Dados validados
+          </Text>
+
+          <Text style={styles.textoResultado}>
+            Nome: {cadastro.nome}
+          </Text>
+
+          <Text style={styles.textoResultado}>
+            E-mail: {cadastro.email}
+          </Text>
+
+          <Text style={styles.textoResultado}>
+            Idade: {cadastro.idade}
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  tela: {
+    flex: 1,
+    backgroundColor: '#F1F5F9'
+  },
+
+  container: {
+    padding: 22,
+    paddingTop: 55,
+    paddingBottom: 40
+  },
+
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 8
+  },
+
+  descricao: {
+    fontSize: 15,
+    color: '#64748B',
+    marginBottom: 24,
+    lineHeight: 22
+  },
+
+  rotulo: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#334155',
+    marginBottom: 7,
+    marginTop: 12
+  },
+
+  input: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    padding: 13,
+    fontSize: 16
+  },
+
+  erro: {
+    color: '#B91C1C',
+    marginTop: 6,
+    fontSize: 13
+  },
+
+  botao: {
+    backgroundColor: '#1D4ED8',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 24
+  },
+
+  textoBotao: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  botaoSecundario: {
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#94A3B8'
+  },
+
+  textoSecundario: {
+    color: '#334155',
+    fontWeight: 'bold'
+  },
+
+  resultado: {
+    backgroundColor: '#DCFCE7',
+    padding: 18,
+    borderRadius: 10,
+    marginTop: 24
+  },
+
+  tituloResultado: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginBottom: 10
+  },
+
+  textoResultado: {
+    color: '#166534',
+    fontSize: 15,
+    marginTop: 5
+  }
+});
