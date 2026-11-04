@@ -1,0 +1,499 @@
+import React, { useState } from 'react';
+
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions
+} from 'react-native';
+
+// Opções de prioridade
+const PRIORIDADES = ['Baixa', 'Média', 'Alta'];
+
+export default function App() {
+
+  // Identifica a largura da tela
+  const { width } = useWindowDimensions();
+
+  // Verifica se a tela é ampla
+  const telaAmpla = width >= 700;
+
+  // Estados do formulário
+  const [titulo, setTitulo] = useState('');
+  const [disciplina, setDisciplina] = useState('');
+  const [prioridade, setPrioridade] = useState('Média');
+
+  // Armazena as atividades cadastradas
+  const [atividades, setAtividades] = useState([]);
+
+  // Armazena mensagens de erro
+  const [erro, setErro] = useState('');
+
+  // Função para cadastrar uma atividade
+  function cadastrarAtividade() {
+
+    const tituloLimpo = titulo.trim();
+    const disciplinaLimpa = disciplina.trim();
+
+    // Verifica se os campos foram preenchidos
+    if (!tituloLimpo || !disciplinaLimpa) {
+      setErro('Preencha o título e a disciplina antes de cadastrar.');
+      return;
+    }
+
+    // Cria uma nova atividade
+    const novaAtividade = {
+      id: `${Date.now()}-${Math.random()}`,
+      titulo: tituloLimpo,
+      disciplina: disciplinaLimpa,
+      prioridade: prioridade
+    };
+
+    // Adiciona a atividade à lista
+    setAtividades(listaAtual => [
+      novaAtividade,
+      ...listaAtual
+    ]);
+
+    // Limpa os campos
+    setTitulo('');
+    setDisciplina('');
+    setPrioridade('Média');
+    setErro('');
+  }
+
+  // Função para remover uma atividade
+  function removerAtividade(id) {
+
+    setAtividades(listaAtual =>
+      listaAtual.filter(
+        atividade => atividade.id !== id
+      )
+    );
+  }
+
+  return (
+
+    <KeyboardAvoidingView
+      style={styles.tela}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.conteudo,
+          telaAmpla && styles.conteudoAmplo
+        ]}
+      >
+
+        {/* CABEÇALHO */}
+
+        <Text style={styles.titulo}>
+          Organizador acadêmico
+        </Text>
+
+        <Text style={styles.subtitulo}>
+          Cadastre e acompanhe suas atividades.
+        </Text>
+
+        <View
+          style={[
+            styles.layout,
+            telaAmpla && styles.layoutAmplo
+          ]}
+        >
+
+          {/* FORMULÁRIO DE CADASTRO */}
+
+          <View style={styles.formulario}>
+
+            <Text style={styles.tituloSecao}>
+              Nova atividade
+            </Text>
+
+            {/* Campo título */}
+
+            <Text style={styles.rotulo}>
+              Título
+            </Text>
+
+            <TextInput
+              style={styles.entrada}
+              placeholder="Ex.: Revisar exercícios"
+              value={titulo}
+              onChangeText={setTitulo}
+              maxLength={100}
+              returnKeyType="next"
+            />
+
+            {/* Campo disciplina */}
+
+            <Text style={styles.rotulo}>
+              Disciplina
+            </Text>
+
+            <TextInput
+              style={styles.entrada}
+              placeholder="Ex.: Estrutura de Dados"
+              value={disciplina}
+              onChangeText={setDisciplina}
+              maxLength={80}
+              returnKeyType="done"
+            />
+
+            {/* Seleção de prioridade */}
+
+            <Text style={styles.rotulo}>
+              Prioridade
+            </Text>
+
+            <View style={styles.prioridades}>
+
+              {PRIORIDADES.map(opcao => {
+
+                const selecionada = prioridade === opcao;
+
+                return (
+
+                  <Pressable
+                    key={opcao}
+                    onPress={() => setPrioridade(opcao)}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: selecionada
+                    }}
+                    style={[
+                      styles.opcaoPrioridade,
+                      selecionada && styles.opcaoSelecionada
+                    ]}
+                  >
+
+                    <Text
+                      style={[
+                        styles.textoOpcao,
+                        selecionada && styles.textoOpcaoSelecionada
+                      ]}
+                    >
+                      {opcao}
+                    </Text>
+
+                  </Pressable>
+
+                );
+
+              })}
+
+            </View>
+
+            {/* Mensagem de erro */}
+
+            {erro ? (
+
+              <Text style={styles.erro}>
+                {erro}
+              </Text>
+
+            ) : null}
+
+            {/* BOTÃO DE CADASTRO */}
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.botao,
+                pressed && styles.botaoPressionado
+              ]}
+              onPress={cadastrarAtividade}
+              accessibilityRole="button"
+            >
+
+              <Text style={styles.textoBotao}>
+                Cadastrar atividade
+              </Text>
+
+            </Pressable>
+
+          </View>
+
+          {/* LISTA DE ATIVIDADES */}
+
+          <View style={styles.lista}>
+
+            <Text style={styles.tituloSecao}>
+              Atividades cadastradas
+            </Text>
+
+            <Text style={styles.contador}>
+              Total: {atividades.length}
+            </Text>
+
+            {/* Verifica se existem atividades */}
+
+            {atividades.length === 0 ? (
+
+              <Text style={styles.vazio}>
+                Nenhuma atividade cadastrada.
+              </Text>
+
+            ) : (
+
+              atividades.map(atividade => (
+
+                <View
+                  key={atividade.id}
+                  style={styles.cartaoAtividade}
+                >
+
+                  <Text style={styles.tituloAtividade}>
+                    {atividade.titulo}
+                  </Text>
+
+                  <Text style={styles.textoSecundario}>
+                    Disciplina: {atividade.disciplina}
+                  </Text>
+
+                  <Text style={styles.textoSecundario}>
+                    Prioridade: {atividade.prioridade}
+                  </Text>
+
+                  {/* Botão para remover */}
+
+                  <Pressable
+                    onPress={() => removerAtividade(atividade.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remover atividade ${atividade.titulo}`}
+                    style={styles.botaoRemover}
+                  >
+
+                    <Text style={styles.textoRemover}>
+                      Remover
+                    </Text>
+
+                  </Pressable>
+
+                </View>
+
+              ))
+
+            )}
+
+          </View>
+
+        </View>
+
+      </ScrollView>
+
+    </KeyboardAvoidingView>
+
+  );
+}
+
+// ESTILIZAÇÃO DA APLICAÇÃO
+
+const styles = StyleSheet.create({
+
+  tela: {
+    flex: 1,
+    backgroundColor: '#f4f6fa'
+  },
+
+  conteudo: {
+    padding: 20,
+    paddingTop: 48,
+    paddingBottom: 40
+  },
+
+  conteudoAmplo: {
+    paddingHorizontal: 32,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1100
+  },
+
+  titulo: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#17365d'
+  },
+
+  subtitulo: {
+    fontSize: 16,
+    lineHeight: 23,
+    color: '#555555',
+    marginTop: 8,
+    marginBottom: 24
+  },
+
+  // Organização dos elementos
+  layout: {
+    flexDirection: 'column'
+  },
+
+  // Duas colunas em telas amplas
+  layoutAmplo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start'
+  },
+
+  // Cartão do formulário
+  formulario: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 24
+  },
+
+  // Área da lista
+  lista: {
+    flex: 1
+  },
+
+  tituloSecao: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 12
+  },
+
+  rotulo: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333333',
+    marginTop: 12,
+    marginBottom: 8
+  },
+
+  // Campos de entrada
+  entrada: {
+    width: '100%',
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: '#cbd2df',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#ffffff'
+  },
+
+  // Opções de prioridade
+  prioridades: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 4,
+    marginBottom: 16
+  },
+
+  opcaoPrioridade: {
+    borderWidth: 1,
+    borderColor: '#cbd2df',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    marginBottom: 8
+  },
+
+  opcaoSelecionada: {
+    backgroundColor: '#17365d',
+    borderColor: '#17365d'
+  },
+
+  textoOpcao: {
+    color: '#333333',
+    fontWeight: '500'
+  },
+
+  textoOpcaoSelecionada: {
+    color: '#ffffff'
+  },
+
+  // Botão principal
+  botao: {
+    backgroundColor: '#17365d',
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    minHeight: 52,
+    marginTop: 20,
+    marginBottom: 10
+  },
+
+  botaoPressionado: {
+    backgroundColor: '#28558a'
+  },
+
+  textoBotao: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+
+  erro: {
+    color: '#b42318',
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 8,
+    marginBottom: 8
+  },
+
+  contador: {
+    color: '#555555',
+    marginBottom: 12
+  },
+
+  vazio: {
+    color: '#666666',
+    backgroundColor: '#ffffff',
+    padding: 18,
+    borderRadius: 8
+  },
+
+  // Cartão de cada atividade
+  cartaoAtividade: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 12
+  },
+
+  tituloAtividade: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#222222',
+    marginBottom: 8
+  },
+
+  textoSecundario: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#555555',
+    marginBottom: 4
+  },
+
+  // Botão remover
+  botaoRemover: {
+    alignSelf: 'flex-start',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#b42318',
+    borderRadius: 6,
+    marginTop: 12
+  },
+
+  textoRemover: {
+    color: '#b42318',
+    fontWeight: '600'
+  }
+
+});
