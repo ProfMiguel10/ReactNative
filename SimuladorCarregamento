@@ -1,0 +1,72 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Button,
+  ActivityIndicator,
+  StyleSheet
+} from 'react-native';
+
+export default function App() {
+  const [carregando, setCarregando] = useState(false);
+  const [mensagem, setMensagem] = useState(
+    'Toque no botão para consultar.'
+  );
+
+  async function consultarDados() {
+    if (carregando) return;
+
+    setCarregando(true);
+    setMensagem('');
+
+    try {
+      // Simula uma operação assíncrona.
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      setMensagem('Consulta concluída com sucesso!');
+    } catch (erro) {
+      setMensagem('Não foi possível concluir a consulta.');
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Consulta de informações</Text>
+
+      {carregando ? (
+        <>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.texto}>Carregando informações...</Text>
+        </>
+      ) : (
+        <Text style={styles.texto}>{mensagem}</Text>
+      )}
+
+      <Button
+        title="Consultar"
+        onPress={consultarDados}
+        disabled={carregando}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+    gap: 18
+  },
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  texto: {
+    fontSize: 17,
+    textAlign: 'center'
+  }
+});
