@@ -1,0 +1,194 @@
+import React, { useState } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet
+} from 'react-native';
+
+export default function App() {
+
+  // Armazena o e-mail digitado
+  const [email, setEmail] = useState('');
+
+  // Controla a mensagem apresentada
+  const [mensagem, setMensagem] = useState('');
+
+  // Controla o tipo de mensagem
+  const [tipoMensagem, setTipoMensagem] = useState('');
+
+  // Função para validar o e-mail
+  function validarEmail() {
+
+    const valor = email.trim();
+
+    // Verifica se o campo está vazio
+    if (!valor) {
+      setMensagem('Informe seu e-mail.');
+      setTipoMensagem('erro');
+      return;
+    }
+
+    // Expressão regular para validar o formato
+    const padrao = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Verifica se o e-mail é válido
+    if (!padrao.test(valor)) {
+      setMensagem('Confira o endereço de e-mail informado.');
+      setTipoMensagem('erro');
+      return;
+    }
+
+    // Apresenta mensagem de sucesso
+    setMensagem('O formato do e-mail parece válido!');
+    setTipoMensagem('sucesso');
+  }
+
+  return (
+
+    <View style={styles.container}>
+
+      <Text style={styles.titulo}>
+        Validação de dados
+      </Text>
+
+      <Text style={styles.subtitulo}>
+        Digite seu e-mail para verificar o formato.
+      </Text>
+
+      {/* Campo de e-mail */}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Digite seu e-mail"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        value={email}
+        onChangeText={(texto) => {
+          setEmail(texto);
+          setMensagem('');
+          setTipoMensagem('');
+        }}
+      />
+
+      {/* Botão para validar */}
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.botao,
+          pressed && styles.botaoPressionado
+        ]}
+        onPress={validarEmail}
+      >
+
+        <Text style={styles.textoBotao}>
+          Validar e-mail
+        </Text>
+
+      </Pressable>
+
+      {/* Mensagem de retorno */}
+
+      {mensagem !== '' && (
+
+        <View
+          style={[
+            styles.mensagem,
+            tipoMensagem === 'erro'
+              ? styles.mensagemErro
+              : styles.mensagemSucesso
+          ]}
+        >
+
+          <Text style={styles.textoMensagem}>
+            {tipoMensagem === 'erro' ? '⚠️ ' : '✓ '}
+            {mensagem}
+          </Text>
+
+        </View>
+
+      )}
+
+    </View>
+
+  );
+}
+
+// Estilização
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#f4f6fa'
+  },
+
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#17365d',
+    marginBottom: 10
+  },
+
+  subtitulo: {
+    fontSize: 15,
+    color: '#555',
+    marginBottom: 24
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#999',
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    fontSize: 16
+  },
+
+  botao: {
+    backgroundColor: '#2457C5',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  botaoPressionado: {
+    backgroundColor: '#17365d'
+  },
+
+  textoBotao: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  mensagem: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 8
+  },
+
+  mensagemErro: {
+    backgroundColor: '#FDE8E7',
+    borderWidth: 1,
+    borderColor: '#D92D20'
+  },
+
+  mensagemSucesso: {
+    backgroundColor: '#E5F6EB',
+    borderWidth: 1,
+    borderColor: '#24934A'
+  },
+
+  textoMensagem: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333'
+  }
+
+});
