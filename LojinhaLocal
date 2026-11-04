@@ -1,0 +1,305 @@
+
+import React, { useState, useEffect } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Alert
+} from 'react-native'; 
+
+
+import {
+  SQLiteProvider,
+  useSQLiteContext
+} from 'expo-sqlite';
+
+// Inicializa o banco e cria a tabela
+async function inicializarBanco(db) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS produtos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      preco REAL NOT NULL
+    );
+  `);
+}
+
+// Componente principal
+export default function App() {
+  return (
+    <SQLiteProvider
+      databaseName="lojinha.db"
+      onInit={inicializarBanco}
+    >
+      <Loja />
+    </SQLiteProvider>
+  );
+}
+
+function Loja() {
+
+  const db = useSQLiteContext();
+
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [produtos, setProdutos] = useState([]);
+  const [carrinho, setCarrinho] = useState([]);
+
+  // Consulta os produtos no banco
+  async function carregarProdutos() {
+    const resultado = await db.getAllAsync(
+      'SELECT * FROM produtos ORDER BY id DESC'
+    );
+
+    setProdutos(resultado);
+  }
+
+  // Carrega os produtos quando a tela inicia
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  // Cadastra um produto no SQLite
+  async function cadastrarProduto() {
+
+    const valor = Number(preco.replace(',', '.'));
+
+    if (!nome.trim() || !Number.isFinite(valor) || valor <= 0) {
+      Alert.alert('Atenção', 'Informe nome e preço válido!');
+      return;
+    }
+
+    await db.runAsync(
+      'INSERT INTO produtos (nome, preco) VALUES (?, ?)',
+      nome.trim(),
+      valor
+    );
+
+    setNome('');
+    setPreco('');
+
+    carregarProdutos();
+
+    Alert.alert('Sucesso', 'Produto cadastrado!');
+  }
+
+  // Adiciona produto ao carrinho
+  function adicionarCarrinho(produto) {
+
+    setCarrinho([
+      ...carrinho,
+      produto
+    ]);
+
+  }
+
+  // Calcula o total do carrinho
+  const total = carrinho.reduce(
+    (soma, item) => soma + item.preco,
+    0
+  );
+
+  function moeda(valor) {
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+
+      <Text style={styles.titulo}>
+        🛍️ Minha Lojinha
+      </Text>
+
+      {/* Cadastro */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Cadastrar Produto
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Nome do produto"
+          value={nome}
+          onChangeText={setNome}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Preço"
+          keyboardType="decimal-pad"
+          value={preco}
+          onChangeText={setPreco}
+        />
+
+        <Pressable
+          style={styles.botao}
+          onPress={cadastrarProduto}
+        >
+          <Text style={styles.textoBotao}>
+            Salvar no Banco de Dados
+          </Text>
+        </Pressable>
+
+      </View>
+
+      {/* Produtos cadastrados */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          Produtos Cadastrados
+        </Text>
+
+        {produtos.map(item => (
+
+          <View key={item.id} style={styles.item}>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.nome}>
+                {item.nome}
+              </Text>
+
+              <Text>{moeda(item.preco)}</Text>
+            </View>
+
+            <Pressable
+              style={styles.botaoAdicionar}
+              onPress={() => adicionarCarrinho(item)}
+            >
+              <Text style={styles.textoBotao}>
+                + Carrinho
+              </Text>
+            </Pressable>
+
+          </View>
+
+        ))}
+
+      </View>
+
+      {/* Carrinho */}
+
+      <View style={styles.card}>
+
+        <Text style={styles.subtitulo}>
+          🛒 Carrinho de Compras
+        </Text>
+
+        {carrinho.map((item, index) => (
+
+          <Text key={index} style={styles.itemCarrinho}>
+            {item.nome} - {moeda(item.preco)}
+          </Text>
+
+        ))}
+
+        <Text style={styles.total}>
+          Total: {moeda(total)}
+        </Text>
+
+        <Pressable
+          style={styles.botao}
+          onPress={() => setCarrinho([])}
+        >
+          <Text style={styles.textoBotao}>
+            Limpar Carrinho
+          </Text>
+        </Pressable>
+
+      </View>
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    padding: 16
+  },
+
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#1e3a8a'
+  },
+
+  card: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 18
+  },
+
+  subtitulo: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    marginBottom: 15
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12
+  },
+
+  botao: {
+    backgroundColor: '#2563eb',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+
+  botaoAdicionar: {
+    backgroundColor: '#16a34a',
+    padding: 10,
+    borderRadius: 7
+  },
+
+  textoBotao: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+
+  nome: {
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+
+  itemCarrinho: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+
+  total: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#15803d',
+    marginVertical: 18
+  }
+
+});
