@@ -1,0 +1,80 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Button,
+  Image,
+  StyleSheet,
+  Alert,
+  ScrollView
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+export default function App() {
+  const [imagem, setImagem] = useState(null);
+
+  async function selecionarImagem() {
+    try {
+      const permissao =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          'Permissão necessária',
+          'Autorize o acesso às imagens para selecionar uma foto.'
+        );
+        return;
+      }
+
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8
+      });
+
+      if (!resultado.canceled && resultado.assets?.length > 0) {
+        setImagem(resultado.assets[0].uri);
+      }
+    } catch (erro) {
+      Alert.alert('Erro', 'Não foi possível abrir a galeria.');
+    }
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>Minha galeria</Text>
+
+      <Button
+        title="Selecionar imagem"
+        onPress={selecionarImagem}
+      />
+
+      {imagem ? (
+        <Image source={{ uri: imagem }} style={styles.imagem} />
+      ) : (
+        <Text>Nenhuma imagem selecionada.</Text>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    gap: 20
+  },
+  titulo: {
+    fontSize: 26,
+    fontWeight: 'bold'
+  },
+  imagem: {
+    width: 280,
+    height: 280,
+    borderRadius: 12,
+    resizeMode: 'cover'
+  }
+});
